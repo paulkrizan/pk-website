@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://paulkrizan.github.io/pk-website/sitemap.xml

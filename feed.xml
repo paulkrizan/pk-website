@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+    <title>Paul Krizan</title>
+    <link href="https://paulkrizan.github.io/pk-website/feed.xml" rel="self" />
+    <link href="https://paulkrizan.github.io/pk-website" />
+    <updated>2025-07-16T15:39:59-05:00</updated>
+    <author>
+        <name>Paul Krizan</name>
+    </author>
+    <id>https://paulkrizan.github.io/pk-website</id>
+
+    <entry>
+        <title>This is a first post</title>
+        <author>
+            <name>Paul Krizan</name>
+        </author>
+        <link href="https://paulkrizan.github.io/pk-website/this-is-a-first-post.html"/>
+        <id>https://paulkrizan.github.io/pk-website/this-is-a-first-post.html</id>
+
+        <updated>2025-07-16T14:39:15-05:00</updated>
+            <summary>
+                <![CDATA[
+                    Here is some text for the first post. Here's another paragraph
+                ]]>
+            </summary>
+        <content type="html">
+            <![CDATA[
+                
+  <p>
+    Here is some text for the first post.<br>
+  </p>
+
+  <p>
+    Here's another paragraph
+  </p>
+
+  <p>
+    
+  </p>
+            ]]>
+        </content>
+    </entry>
+</feed>
