@@ -89,20 +89,19 @@
             var signals = ["USB_ACCESSORY_CONNECTED"];
             Crestron.register(signals);
 
-            var status = Crestron.getIntegerSignal("USB_ACCESSORY_CONNECTED");
+            var status = Crestron.getBooleanSignal("USB_ACCESSORY_CONNECTED");
             updateUSBStatusText(status);
         }
 
         register();
 
-        // status: 0=Offline, 1=Available
         function updateUSBStatusText(value) {
             var statusString = "Unknown";
             switch(value) {
-                case 0:
+                case false:
                     statusString = "Disconnected";
                     break;
-                case 1:
+                case true:
                     statusString = "Connected";
                     break;
             }
@@ -110,8 +109,8 @@
             USBStatusText.innerHTML = statusString;
         }
 
-        function handleIntegerSignalChange(s, i) {
-            console.log("handleIntegerSignalChange - " + s + ", " + i);
+        function handleBooleanSignalChange(s, i) {
+            console.log("handleBooleanSignalChange - " + s + ", " + i);
             if(s === "USB_ACCESSORY_CONNECTED") {
                 updateUSBStatusText(i);
             }
@@ -123,6 +122,7 @@
 
 
 </html>
+
 
 
 
