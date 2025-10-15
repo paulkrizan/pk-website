@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang=>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>Crestron Occupancy Example</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="occStatusContainer">
+                <div class="occStatusDisplay">
+                    <label for="occ_status">
+                        Occupancy status:
+                    </label>
+                    <textarea id="occ_status">Waiting</textarea>
+                </div>
+            </div>
+        </div>
+    </body>
+    <style>
+        *{
+          text-align: center;
+        }
+
+        #occStatusContainer{
+            position: absolute;
+            border: 2px solid #006100;
+            top: 25%;
+            left: 25%;
+        }
+
+        label{
+          display: block;
+          margin: 1rem 0;
+          font-weight: bold;
+          font:
+            40pt 'Fira Sans',
+            sans-serif;
+        }
+
+        textarea{
+          height: auto;
+          text-align: center;
+          background: rgba(0, 0, 255, 0.1);
+          padding-top: 40px;
+          margin-bottom: 10px;
+          font-size: 40pt;
+          font-family: "Helvetica Neue";
+          font-weight: bold;
+          width: 60%;
+        }
+    </style>
+    <script type="text/javascript">
+
+        const occStatusText = document.getElementById("occ_status");
+
+        function register() {
+            console.log('register signals');
+            var signals = ["OCCUPANCY_STATE"];
+            Crestron.register(signals);
+
+            var status = Crestron.getIntegerSignal("OCCUPANCY_STATE");
+            updateOccStatusText(status);
+        }
+
+        register();
+
+        // status: 0=Offline, 1=Available, 2=Occupied
+        function updateOccStatusText(value) {
+            var statusString = "Unknown";
+            switch(value) {
+                case 0:
+                    statusString = "Sensor Offline";
+                    break;
+                case 1:
+                    statusString = "Available";
+                    break;
+                case 2:
+                    statusString = "Occupied";
+                    break;
+            }
+
+            occStatusText.value = statusString;
+        }
+
+        function handleIntegerSignalChange(s, i) {
+            console.log("handleIntegerSignalChange - " + s + ", " + i);
+            if(s === "OCCUPANCY_STATE") {
+                updateOccStatusText(i);
+            }
+        }
+    </script>
+</html>
