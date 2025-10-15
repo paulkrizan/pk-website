@@ -82,11 +82,47 @@
         Crestron.sendIntegerSignal("USB_BLUE_LED_BRIGHTNESS", bNum);
     }
 
+	const usbStatusText = document.getElementById("usb_status");
+
+        function register() {
+            console.log('register signals');
+            var signals = ["USB_ACCESSORY_CONNECTED"];
+            Crestron.register(signals);
+
+            var status = Crestron.getIntegerSignal("USB_ACCESSORY_CONNECTED");
+            updateUSBStatusText(status);
+        }
+
+        register();
+
+        // status: 0=Offline, 1=Available
+        function updateUSBStatusText(value) {
+            var statusString = "Unknown";
+            switch(value) {
+                case 0:
+                    statusString = "Disconnected";
+                    break;
+                case 1:
+                    statusString = "Connected";
+                    break;
+            }
+
+            USBStatusText.value = statusString;
+        }
+
+        function handleIntegerSignalChange(s, i) {
+            console.log("handleIntegerSignalChange - " + s + ", " + i);
+            if(s === "USB_ACCESSORY_CONNECTED") {
+                updateUSBStatusText(i);
+            }
+        }	
+
 </script>
 
 </body>
 
 
 </html>
+
 
 
