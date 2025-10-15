@@ -1,0 +1,88 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+  <title>USB LED DEMO</title>
+</head>
+<body>
+
+
+<input style="height:75px;width:175px" type="button" value="RED ON" onClick="redon()" />
+
+<input style="height:75px;width:175px" type="button" value="RED OFF" onClick="redoff()" />
+
+<br>
+
+<input style="height:75px;width:175px" type="text" id="redbrt" pattern="[0-9]" title="RED BRIGHTNESS" /> 
+
+<input style="height:75px;width:175px" type="button" value="RED BRIGHTNESS" onClick="redbrtapply()" />
+
+<br>
+
+<br>
+<input style="height:75px;width:175px" type="button" value="GREEN ON" onClick="greenon()" />
+
+<input style="height:75px;width:175px" type="button" value="GREEN OFF" onClick="greenoff()" />
+
+<br>
+
+<input style="height:75px;width:175px" type="text" id="greenbrt" pattern="[0-9]" title="GREEN BRIGHTNESS" /> 
+
+<input style="height:75px;width:175px" type="button" value="GREEN BRIGHTNESS" onClick="greenbrtapply()" />
+
+<br>
+<br>
+<input style="height:75px;width:175px" type="button" value="BLUE ON" onClick="blueon()" />
+
+<input style="height:75px;width:175px" type="button" value="BLUE OFF" onClick="blueoff()" />
+
+<br>
+<input style="height:75px;width:175px" type="text" id="bluebrt" pattern="[0-9]" title="BLUE BRIGHTNESS" /> 
+
+<input style="height:75px;width:175px" type="button" value="BLUE BRIGHTNESS" onClick="bluebrtapply()" />
+
+<br>
+<script type="text/javascript">
+
+    function redon() {
+        Crestron.sendBooleanSignal("USB_RED_LED_CONTROL", true);
+    }
+    function redoff() {
+        Crestron.sendBooleanSignal("USB_RED_LED_CONTROL", false);
+    }
+    function redbrtapply() {
+		var rbrt = document.getElementById("redbrt").value;
+		var rNum = Number(rbrt);
+        Crestron.sendIntegerSignal("USB_RED_LED_BRIGHTNESS", rNum);
+    }
+	
+	function greenon() {
+        Crestron.sendBooleanSignal("USB_GREEN_LED_CONTROL", true);
+    }
+    function greenoff() {
+        Crestron.sendBooleanSignal("USB_GREEN_LED_CONTROL", false);
+    }
+	function greenbrtapply() {
+		var gbrt = document.getElementById("greenbrt").value;
+		var gNum = Number(gbrt);
+        Crestron.sendIntegerSignal("USB_GREEN_LED_BRIGHTNESS", gNum);
+    }
+	
+	function blueon() {
+        Crestron.sendBooleanSignal("USB_BLUE_LED_CONTROL", true);
+    }
+    function blueoff() {
+        Crestron.sendBooleanSignal("USB_BLUE_LED_CONTROL", false);
+    }
+	function bluebrtapply() {
+		var bbrt = document.getElementById("bluebrt").value;
+		var bNum = Number(bbrt);
+        Crestron.sendIntegerSignal("USB_BLUE_LED_BRIGHTNESS", bNum);
+    }
+
+</script>
+
+</body>
+
+</html>
