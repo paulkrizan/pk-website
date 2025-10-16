@@ -92,7 +92,7 @@
 		var signals = ["USB_ACCESSORY_CONNECTED"];
         Crestron.register(signals);
 
-		var panel_info = Crestron.getCresstoreSignal("DEVICE_ROOT");
+		var panel_info = Crestron.getCresstoreSignal("DEVICE_INFO");
 		updatePanelInfoText(panel_info);
 		
 		var status = Crestron.getBooleanSignal("USB_ACCESSORY_CONNECTED");
@@ -134,6 +134,7 @@
 
 
 </html>
+
 
 
 
