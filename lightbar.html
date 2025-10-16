@@ -7,6 +7,8 @@
 </head>
 <body>
 
+<div>Device Info: </div><div id="device_info">Info</div>
+	
 <div>USB LED Status: </div><div id="usb_status">Disconnected</div>
 
 <input style="height:75px;width:175px" type="button" value="RED ON" onClick="redon()" />
@@ -83,38 +85,48 @@
     }
 
 	const USBStatusText = document.getElementById("usb_status");
+	const DeviceInfoText = document.getElementById("device_info");
 
-        function register() {
-            console.log('register signals');
-            var signals = ["USB_ACCESSORY_CONNECTED"];
-            Crestron.register(signals);
+    function register() {
+    	console.log('register signals');
+		var signals = ["USB_ACCESSORY_CONNECTED"];
+        Crestron.register(signals);
 
-            var status = Crestron.getBooleanSignal("USB_ACCESSORY_CONNECTED");
-            updateUSBStatusText(status);
+		var panel_info = Crestron.getCresstoreSignal("DEVICE_INFO");
+		updatePanelInfoText(panel_info);
+		
+		var status = Crestron.getBooleanSignal("USB_ACCESSORY_CONNECTED");
+        updateUSBStatusText(status);
+    }
+
+	register();
+
+	function updatePanelInfoText(panel_info) {
+		var infoString = "Missing";
+		
+		DeviceInfoText.textContent = JSON.stringify(panel_info, null, 2);
+	}
+	
+    function updateUSBStatusText(value) {
+    	var statusString = "Unknown";
+    	switch(value) {
+        	case false:
+            	statusString = "Disconnected";
+                break;
+            case true:
+            	statusString = "Connected";
+                break;
         }
 
-        register();
+		USBStatusText.innerHTML = statusString;
+    }
 
-        function updateUSBStatusText(value) {
-            var statusString = "Unknown";
-            switch(value) {
-                case false:
-                    statusString = "Disconnected";
-                    break;
-                case true:
-                    statusString = "Connected";
-                    break;
-            }
-
-            USBStatusText.innerHTML = statusString;
+    function handleBooleanSignalChange(s, i) {
+    	console.log("handleBooleanSignalChange - " + s + ", " + i);
+        if(s === "USB_ACCESSORY_CONNECTED") {
+        	updateUSBStatusText(i);
         }
-
-        function handleBooleanSignalChange(s, i) {
-            console.log("handleBooleanSignalChange - " + s + ", " + i);
-            if(s === "USB_ACCESSORY_CONNECTED") {
-                updateUSBStatusText(i);
-            }
-        }	
+    }	
 
 </script>
 
@@ -122,6 +134,7 @@
 
 
 </html>
+
 
 
 
