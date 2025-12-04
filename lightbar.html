@@ -73,10 +73,10 @@
     }
 	
 	function blueon() {
-        Crestron.sendBooleanSignal("BUILTIN_BLUE_LED_CONTROL", true);
+        Crestron.sendBooleanSignal("USB_BLUE_LED_CONTROL", true);
     }
     function blueoff() {
-        Crestron.sendBooleanSignal("BUILTIN_BLUE_LED_CONTROL", false);
+        Crestron.sendBooleanSignal("USB_BLUE_LED_CONTROL", false);
     }
 	function bluebrtapply() {
 		var bbrt = document.getElementById("bluebrt").value;
@@ -134,6 +134,7 @@
 
 
 </html>
+
 
 
 
