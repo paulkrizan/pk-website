@@ -1,41 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Browser Benchmarks</title>
-  <meta name="theme-color" content="#0b1220" />
-
   <style>
     :root{
       --bg: #0b1220;
-      --card: #111a2e;
-      --card2: #0f172a;
+      --panel: #111a2e;
       --text: #e8eefc;
-      --muted: #a9b7d6;
-      --accent: #4ea1ff;
-      --accent2:#76f2c1;
-      --danger:#ff6b6b;
       --outline: rgba(255,255,255,.14);
       --shadow: 0 10px 30px rgba(0,0,0,.35);
 
-      /* Touch sizing */
-      --tapMin: 64px;     /* big tap target */
-      --gap: 16px;
+      /* Touch-friendly sizing */
+      --tapMin: 76px;      /* big tap targets */
       --radius: 18px;
-      --maxw: 820px;
+      --gap: 16px;
+      --maxw: 920px;
     }
 
     @media (prefers-color-scheme: light){
       :root{
         --bg:#f4f7ff;
-        --card:#ffffff;
-        --card2:#ffffff;
+        --panel:#ffffff;
         --text:#0f172a;
-        --muted:#475569;
-        --accent:#0b63e6;
-        --accent2:#0bbf7a;
-        --danger:#c81e1e;
         --outline: rgba(15,23,42,.12);
         --shadow: 0 10px 30px rgba(2,6,23,.10);
       }
@@ -46,63 +34,25 @@
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1000px 600px at 20% 0%, rgba(78,161,255,.18), transparent 60%),
-                  radial-gradient(900px 700px at 90% 20%, rgba(118,242,193,.14), transparent 60%),
-                  var(--bg);
+      background: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
-      touch-action: manipulation; /* reduces accidental double-tap zoom delays */
+      touch-action: manipulation;
     }
 
     .wrap{
       max-width: var(--maxw);
       margin: 0 auto;
-      padding: 28px 18px 34px;
-    }
-
-    header{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: var(--gap);
-      margin-bottom: 18px;
-    }
-
-    .title{
-      display:flex;
-      flex-direction:column;
-      gap: 6px;
+      padding: 24px 18px 28px;
     }
 
     h1{
-      font-size: clamp(26px, 4vw, 40px);
+      margin: 0 0 18px 0;
+      font-size: clamp(28px, 4vw, 44px);
       line-height: 1.1;
-      margin:0;
       letter-spacing: .2px;
-    }
-
-    .subtitle{
-      margin:0;
-      font-size: clamp(14px, 2.2vw, 18px);
-      color: var(--muted);
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height: 44px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--outline);
-      background: color-mix(in srgb, var(--card) 75%, transparent);
-      box-shadow: var(--shadow);
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 14px;
-      user-select:none;
-      -webkit-user-select:none;
+      text-align: center;
     }
 
     .grid{
@@ -112,284 +62,51 @@
     }
 
     @media (min-width: 720px){
-      .grid{
-        grid-template-columns: 1fr 1fr;
-      }
+      .grid{ grid-template-columns: 1fr 1fr; }
     }
 
-    .card{
-      background: color-mix(in srgb, var(--card) 90%, transparent);
-      border: 1px solid var(--outline);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .cardHead{
-      padding: 16px 18px 10px;
+    a.btn{
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      border-bottom: 1px solid var(--outline);
-      background: color-mix(in srgb, var(--card2) 92%, transparent);
-    }
-
-    .name{
-      display:flex;
-      flex-direction:column;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .name strong{
-      font-size: 18px;
-      letter-spacing: .2px;
-    }
-
-    .name span{
-      font-size: 13px;
-      color: var(--muted);
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 42ch;
-    }
-
-    .actions{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    /* Big, finger-friendly buttons */
-    .btn{
-      appearance:none;
-      -webkit-appearance:none;
-      border: 0;
-      border-radius: 14px;
-      min-height: var(--tapMin);
-      padding: 14px 16px;
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      font-weight: 700;
-      font-size: 16px;
-      display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap: 10px;
+      min-height: var(--tapMin);
+      padding: 18px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--outline);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      color: var(--text);
       text-decoration:none;
-      width: 100%;
-      outline: none;
+      font-weight: 800;
+      font-size: clamp(18px, 2.4vw, 22px);
+      letter-spacing: .2px;
+      -webkit-tap-highlight-color: transparent;
       user-select:none;
       -webkit-user-select:none;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .btnPrimary{
-      background: linear-gradient(180deg,
-        color-mix(in srgb, var(--accent) 80%, white 10%),
-        color-mix(in srgb, var(--accent) 75%, black 10%));
-      color: white;
+    a.btn:active{
+      transform: scale(0.99);
     }
 
-    .btnSecondary{
-      background: linear-gradient(180deg,
-        color-mix(in srgb, var(--accent2) 65%, white 10%),
-        color-mix(in srgb, var(--accent2) 55%, black 10%));
-      color: #052016;
-    }
-
-    .btnDanger{
-      background: linear-gradient(180deg,
-        color-mix(in srgb, var(--danger) 75%, white 10%),
-        color-mix(in srgb, var(--danger) 65%, black 10%));
-      color: white;
-    }
-
-    /* Focus styles for accessibility (keyboard + assistive) */
-    .btn:focus-visible{
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent);
-    }
-
-    /* Sub-actions row inside each card */
-    .cardBody{
-      padding: 16px 18px 18px;
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 420px){
-      .row{ grid-template-columns: 1fr; }
-    }
-
-    .hint{
-      margin-top: 16px;
-      padding: 14px 16px;
-      border-radius: var(--radius);
-      border: 1px dashed var(--outline);
-      background: color-mix(in srgb, var(--card) 70%, transparent);
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    footer{
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 13px;
-      text-align:center;
-      padding-bottom: 10px;
-    }
-
-    .icon{
-      width: 22px;
-      height: 22px;
-      flex: 0 0 auto;
-      display:inline-block;
-    }
-
-    /* Reduce motion if requested */
-    @media (prefers-reduced-motion: reduce){
-      *{ scroll-behavior:auto !important; transition:none !important; }
+    a.btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(78,161,255,.35), var(--shadow);
     }
   </style>
 </head>
 
 <body>
   <main class="wrap">
-    <header>
-      <div class="title">
-        <h1>Browser Benchmarks</h1>
-      </div>
-    </header>
+    <h1>Browser Benchmarks</h1>
 
-
-    <div style="height: var(--gap);"></div>
-
-    <!-- Benchmark grid -->
-    <section class="grid" aria-label="Benchmarks">
-      <!-- Speedometer -->
-      <article class="card">
-        <div class="cardHead">
-          <div class="name">
-            <strong>Speedometer 3.1</strong>
-            <span>https://browserbench.org/Speedometer3.1</span>
-          </div>
-        </div>
-        <div class="cardBody">
-          <a class="btn btnPrimary" href="https://browserbench.org/Speedometer3.1" target="_blank" rel="noopener">
-            <span class="icon" aria-hidden="true">🚀</span>
-            Launch Speedometer 3.1
-          </a>
-        </div>
-      </article>
-
-      <!-- JetStream -->
-      <article class="card">
-        <div class="cardHead">
-          <div class="name">
-            <strong>JetStream</strong>
-            <span>https://browserbench.org/JetStream</span>
-          </div>
-        </div>
-        <div class="cardBody">
-          <a class="btn btnPrimary" href="https://browserbench.org/JetStream" target="_blank" rel="noopener">
-            <span class="icon" aria-hidden="true">⚡</span>
-            Launch JetStream
-          </a>
-        </div>
-      </article>
-
-      <!-- MotionMark -->
-      <article class="card">
-        <div class="cardHead">
-          <div class="name">
-            <strong>MotionMark 1.3.1</strong>
-            <span>https://browserbench.org/MotionMark1.3.1</span>
-          </div>
-        </div>
-        <div class="cardBody">
-          <a class="btn btnPrimary" href="https://browserbench.org/MotionMark1.3.1" target="_blank" rel="noopener">
-            <span class="icon" aria-hidden="true">🎞️</span>
-            Launch MotionMark 1.3.1
-          </a>
-        </div>
-      </article>
-
-      <!-- Basemark -->
-      <article class="card">
-        <div class="cardHead">
-          <div class="name">
-            <strong>Basemark Web</strong>
-            <span>https://web.basemark.com/</span>
-          </div>
-        </div>
-        <div class="cardBody">
-          <a class="btn btnPrimary" href="https://web.basemark.com/" target="_blank" rel="noopener">
-            <span class="icon" aria-hidden="true">📊</span>
-            Launch Basemark Web
-          </a>
-        </div>
-      </article>
-
-      <!-- WebXPRT -->
-      <article class="card">
-        <div class="cardHead">
-          <div class="name">
-            <strong>WebXPRT 5</strong>
-            <span>https://www.principledtechnologies.com/wx5/</span>
-          </div>
-        </div>
-        <div class="cardBody">
-          <a class="btn btnPrimary" href="https://www.principledtechnologies.com/wx5/" target="_blank" rel="noopener">
-            <span class="icon" aria-hidden="true">🧩</span>
-            Launch WebXPRT 5
-          </a>
-        </div>
-      </article>
+    <section class="grid" aria-label="Browser benchmark links">
+      <a class="btn" href="https://browserbench.org/Speedometer3.1">Speedometer 3.1</a>
+      <a class="btn" href="https://browserbench.org/JetStream">JetStream</a>
+      <a class="btn" href="https://browserbench.org/MotionMark1.3.1">MotionMark 1.3.1</a>
+      <a class="btn" href="https://web.basemark.com/">Basemark Web</a>
+      <a class="btn" href="https://www.principledtechnologies.com/wx5/">WebXPRT 5</a>
     </section>
-
-
-
-
   </main>
-
-  <script>
-    (function(){
-      const links = [
-        "https://browserbench.org/Speedometer3.1",
-        "https://browserbench.org/JetStream",
-        "https://browserbench.org/MotionMark1.3.1",
-        "https://web.basemark.com/",
-        "https://www.principledtechnologies.com/wx5/"
-      ];
-
-      const openAllBtn = document.getElementById("openAllBtn");
-      const resetBtn = document.getElementById("resetBtn");
-      const hintBox = document.getElementById("hintBox");
-
-      openAllBtn.addEventListener("click", () => {
-        // Open first immediately; others stagger slightly to reduce blockers.
-        // Some browsers will still block multiple tabs—this is expected behavior.
-        links.forEach((url, i) => {
-          setTimeout(() => window.open(url, "_blank", "noopener"), i * 150);
-        });
-      });
-
-      resetBtn.addEventListener("click", () => {
-        if (hintBox) hintBox.style.display = "none";
-      });
-    })();
-  </script>
 </body>
 </html>
