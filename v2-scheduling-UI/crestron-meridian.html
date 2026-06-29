@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crestron — Meridian</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0a0a; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // ── Meridian: Premium Financial ──────────────────────────────────────────────
+    // Deep blue-black ground · warm ivory type · brushed brass rules · serif display
+    // Signature: hairline brass rules bracket every section like a financial ledger
+
+    const BG   = '#0b0d12';
+    const BG2  = '#0f1219';
+
+    // Brushed brass accent system
+    const BRASS     = '#c4993a';
+    const BRASS_MID = 'rgba(196,153,58,0.32)';
+    const BRASS_DIM = 'rgba(196,153,58,0.16)';
+    const BRASS_TR  = 'rgba(196,153,58,0.07)';
+
+    // Status — authoritative, not neon
+    const SG = '#1aab64', SGB = 'rgba(26,171,100,0.10)', SGBD = 'rgba(26,171,100,0.30)';
+    const SR = '#c73232', SRB = 'rgba(199,50,50,0.10)',  SRBD = 'rgba(199,50,50,0.30)';
+    const SA = '#c4920e', SAB = 'rgba(196,146,14,0.10)', SABD = 'rgba(196,146,14,0.30)';
+    const SB = '#3d88c4', SBB = 'rgba(61,136,196,0.10)', SBBD = 'rgba(61,136,196,0.30)';
+
+    // Warm ivory palette
+    const C1  = '#f0ede6';
+    const C7  = 'rgba(240,237,230,0.72)';
+    const C5  = 'rgba(240,237,230,0.50)';
+    const C3  = 'rgba(240,237,230,0.30)';
+    const C15 = 'rgba(240,237,230,0.15)';
+    const C08 = 'rgba(240,237,230,0.08)';
+    const C05 = 'rgba(240,237,230,0.05)';
+
+    const MC = {
+      available:   { c:SG, bg:SGB, bdr:SGBD, label:'AVAILABLE',    sub:'Available for 53 minutes',          tint:'rgba(26,171,100,0.05)', linC:'rgba(26,171,100,0.20)' },
+      reserved:    { c:SR, bg:SRB, bdr:SRBD, label:'RESERVED',     sub:'Reserved until 12:30 PM',            tint:'rgba(199,50,50,0.05)',  linC:'rgba(199,50,50,0.20)'  },
+      'starts-soon':{ c:SA, bg:SAB, bdr:SABD, label:'STARTS SOON', sub:'Meeting begins in 6 minutes',        tint:'rgba(196,146,14,0.05)', linC:'rgba(196,146,14,0.20)' },
+      occupied:    { c:SB, bg:SBB, bdr:SBBD, label:'OCCUPIED',     sub:'3 people detected · no reservation', tint:'rgba(61,136,196,0.05)', linC:'rgba(61,136,196,0.20)' },
+    };
+
+    const OCC = {
+      available:{mode:'counter',people:false,count:0},
+      reserved:{mode:'counter',people:true,count:2},
+      'starts-soon':{mode:'sensor',people:true,count:null},
+      occupied:{mode:'counter',people:true,count:3},
+    };
+
+    const NOW=727, ROOM='Plano Conf 645';
+    const SCHED={
+      available:[{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960},{id:3,t:'Team Sync',o:'M. Torres',s:990,e:1020}],
+      reserved:[{id:0,t:'Product Demo',o:'J. Williams',s:660,e:750},{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+      'starts-soon':[{id:0,t:'Daily Status Meeting',o:'R. Kumar',s:733,e:803},{id:1,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+      occupied:[{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+    };
+    const NEARBY=[{n:'Plano Conf 640',f:'3F',seats:6,ok:true,dur:'3h+'},{n:'Plano Conf 650',f:'3F',seats:4,ok:true,dur:'1h 30m'},{n:'Plano Conf 660',f:'3F',seats:10,ok:false,free:'2:30 PM'},{n:'Plano Conf 710',f:'4F',seats:8,ok:true,dur:'45 min'},{n:'Focus Room 3A',f:'3F',seats:2,ok:true,dur:'2h 15m'}];
+    const MAINT=['Room needs cleaning','Trash needs emptying','AV equipment issue','Temperature problem','Lighting issue','Other (associate with meeting record)'];
+    const QR_BITS=[[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,1,1,1,0,1,0,0,1,0,1,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1],[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0],[1,0,1,1,0,1,1,0,1,0,1,1,0,0,1,0,1,0,0,1,1],[0,1,0,0,1,0,0,1,1,0,1,0,1,1,0,1,0,0,1,0,0],[1,1,1,0,0,0,1,0,0,1,0,1,0,0,1,0,1,1,0,1,1],[0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,1,0,0,1,0,1],[0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,0,0,1,0],[1,0,0,0,1,0,1,1,0,1,0,0,1,0,1,1,0,1,1,0,1],[0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0],[1,1,1,1,1,1,1,0,1,0,1,0,0,1,0,1,1,0,1,0,0],[1,0,0,0,0,0,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1],[1,0,1,1,1,0,1,0,1,0,0,0,0,1,0,1,0,0,1,0,0],[1,0,1,1,1,0,1,0,0,1,1,0,1,0,1,0,1,1,0,1,1],[1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,0,0,1,0,1],[1,1,1,1,1,1,1,0,1,1,0,0,1,0,1,0,0,1,0,0,0]];
+
+    const SANS = "'Helvetica Neue','Arial',sans-serif";
+    const SERIF = "Georgia,'Times New Roman',serif";
+
+    function NFCLogo({size=36,fill="white"}){
+      return(<svg viewBox="0 0 24 24" width={size} height={size} style={{display:'block'}} fill={fill}><path d="M23.958 1.98C23.895 1 23.143.256 22.145.197c-1.102-.066-4.668-.12-5.693-.12 1.832 1.264 2.082 3.644 2.255 8.066.101 2.62.01 11.799.002 12.188l-.049 2.504-9.628-9.63v-3.014l7.656 7.658c.02-1.516.04-3.492.04-5.299 0-1.76-.026-3.354-.076-4.193-.288-4.819-.737-7.077-3.253-7.962-.77-.27-1.487-.335-2.683-.351C9.728.032 2.848.037 1.854.091.8.147.09.914.042 1.9c-.048.977-.064 19.174 0 20.165.062.98.815 1.724 1.812 1.782 1.102.067 4.668.075 5.694.075-1.832-1.264-2.083-3.643-2.255-8.066-.1-2.62-.009-11.8 0-12.188l.047-2.504 9.629 9.63v3.013L7.312 6.152c-.02 1.514-.04 3.49-.04 5.298 0 1.76.026 3.354.077 4.192.288 4.82.736 7.077 3.252 7.962.77.271 1.487.337 2.683.352.987.012 7.868.006 8.861-.047 1.056-.056 1.765-.822 1.813-1.811.048-.976.064-19.127 0-20.118"/></svg>);
+    }
+    function OccBadge({mode,people,count}){
+      if(!mode||mode==='none')return null;
+      const ic=people?SB:C3;
+      return(<div style={{display:'flex',alignItems:'center',gap:'3px'}}><svg width="13" height="13" viewBox="0 0 24 24" fill={ic}><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>{mode==='counter'&&<span style={{fontSize:'10px',fontWeight:600,color:ic,lineHeight:1,fontFamily:SANS}}>{count}</span>}</div>);
+    }
+    function MiniQR({size=64}){
+      return(<div style={{background:C1,padding:'4px',display:'inline-block',flexShrink:0}}><svg viewBox="0 0 21 21" width={size} height={size}>{QR_BITS.map((row,r)=>row.map((b,c)=>b?<rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#1a1a1a"/>:null))}</svg></div>);
+    }
+
+    // ── Meridian Timeline ─────────────────────────────────────────────────────────
+    // Brass now-line · brass grid · colored left-border on meeting blocks
+    function VTL({sk}){
+      const st=MC[sk]||MC.available, sched=SCHED[sk]||SCHED.available;
+      const S=9*60,E=18*60,SPAN=E-S;
+      const p=m=>((m-S)/SPAN*100).toFixed(2)+'%';
+      const pp=m=>((m-S)/SPAN*100);
+      const inRange=m=>m>=S&&m<=E;
+      return(
+        <div style={{position:'absolute',right:0,top:0,bottom:0,width:'30%',borderLeft:`1px solid ${BRASS_DIM}`,display:'flex',flexDirection:'column',overflow:'hidden',background:BG2,fontFamily:SANS}}>
+          <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:st.tint,pointerEvents:'none'}}/>
+          <div style={{padding:'8px 0 6px',textAlign:'center',fontSize:'8px',fontWeight:700,letterSpacing:'0.18em',color:BRASS,textTransform:'uppercase',borderBottom:`1px solid ${BRASS_DIM}`,flexShrink:0,position:'relative'}}>TODAY</div>
+          <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+            {[9,10,11,12,13,14,15,16,17,18].map(h=>(
+              <div key={h} style={{position:'absolute',top:p(h*60),left:0,right:0,display:'flex',alignItems:'center',pointerEvents:'none'}}>
+                <span style={{fontSize:'7.5px',color:C3,width:'25px',textAlign:'right',paddingRight:'5px',lineHeight:1,flexShrink:0,letterSpacing:'0.02em'}}>{h>12?h-12:h}{h>=12?'p':'a'}</span>
+                <div style={{flex:1,height:'1px',background:BRASS_TR}}/>
+              </div>
+            ))}
+            {sched.map(m=>{
+              if(!inRange(m.s)&&!inRange(m.e))return null;
+              const clampS=Math.max(m.s,S),clampE=Math.min(m.e,E);
+              const isCur=m.s<=NOW&&m.e>NOW;
+              const topV=pp(clampS),htV=pp(clampE)-pp(clampS);
+              return(
+                <div key={m.id} style={{position:'absolute',top:`${topV}%`,height:`${htV}%`,minHeight:'10px',left:'27px',right:'4px',background:isCur?'rgba(240,237,230,0.11)':'rgba(240,237,230,0.05)',borderLeft:`2px solid ${isCur?st.c:BRASS_MID}`,overflow:'hidden',zIndex:2}}>
+                  {htV>4&&<div style={{padding:'2px 5px',fontSize:'8px',color:isCur?C7:C5,fontWeight:isCur?600:400,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.t}</div>}
+                </div>
+              );
+            })}
+            {inRange(NOW)&&(
+              <div style={{position:'absolute',top:p(NOW),left:0,right:0,display:'flex',alignItems:'center',zIndex:10,pointerEvents:'none'}}>
+                <div style={{width:'5px',height:'5px',borderRadius:'50%',background:BRASS,marginLeft:'5px',flexShrink:0}}/>
+                <div style={{flex:1,height:'1.5px',background:BRASS,opacity:0.85}}/>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Meridian primitives ────────────────────────────────────────────────────────
+    // Sharp corners (3px), thin precise borders, letter-spaced labels
+    function MBtn({c,bg,bdr,sm=false,children,onClick}){
+      return(<button onClick={onClick} style={{padding:sm?'8px 14px':'10px 20px',background:bg,border:`1px solid ${bdr}`,borderRadius:'3px',color:c,fontSize:sm?'11px':'12px',fontWeight:600,cursor:'pointer',minHeight:sm?'36px':'42px',lineHeight:1.2,whiteSpace:'nowrap',fontFamily:SANS,letterSpacing:'0.04em'}}>{children}</button>);
+    }
+    function MCard({children,style={},onClick,accent}){
+      const a=accent||BRASS_MID;
+      return(<div onClick={onClick} style={{background:C05,borderLeft:`2px solid ${a}`,border:`1px solid ${C08}`,borderLeft:`2px solid ${a}`,borderRadius:'0 2px 2px 0',padding:'10px 14px',cursor:onClick?'pointer':undefined,fontFamily:SANS,...style}}>{children}</div>);
+    }
+    function Rule({color=BRASS_DIM}){
+      return <div style={{height:'1px',background:color}}/>;
+    }
+    function TBar({sk}){
+      const occ=OCC[sk]||{mode:'none'};
+      const hasOcc=occ.mode&&occ.mode!=='none';
+      return(
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px',fontFamily:SANS}}>
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+            <span style={{fontSize:'10.5px',color:C3,fontWeight:400,letterSpacing:'0.06em'}}>MON 12 JUN · 12:07 PM</span>
+            {hasOcc&&<span style={{color:C15}}>·</span>}
+            {hasOcc&&<OccBadge {...occ}/>}
+          </div>
+          <span style={{fontSize:'8px',fontWeight:700,color:BRASS,letterSpacing:'0.24em',fontFamily:SANS}}>CRESTRON</span>
+        </div>
+      );
+    }
+    function OWrap({title,subtitle,onClose,children}){
+      return(
+        <div style={{position:'absolute',inset:0,background:'rgba(5,7,11,0.90)',display:'flex',alignItems:'center',justifyContent:'center',padding:'18px',zIndex:100,fontFamily:SANS}}>
+          <div style={{background:BG2,borderTop:`2px solid ${BRASS_MID}`,border:`1px solid ${BRASS_DIM}`,borderRadius:'2px',width:'100%',maxWidth:'520px',overflow:'hidden'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 18px',borderBottom:`1px solid ${BRASS_DIM}`}}>
+              <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                <span style={{fontSize:'13px',fontWeight:600,color:C1,letterSpacing:'0.06em'}}>{title}</span>
+                {subtitle}
+              </div>
+              <button onClick={onClose} style={{width:'24px',height:'24px',borderRadius:'2px',background:C05,border:`1px solid ${C08}`,cursor:'pointer',fontSize:'11px',color:C5,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>✕</button>
+            </div>
+            <div style={{padding:'16px 18px',maxHeight:'430px',overflowY:'auto'}}>{children}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Idle Screen ────────────────────────────────────────────────────────────────
+    // Status word is the typographic hero — centered, serif, authoritative
+    // Thin status-color bar at top · brass rules bracket the status block
+    // Clock bottom-left (serif numerals) · touch prompt bottom-right
+    function IdleScreen({sk,onWake}){
+      const st=MC[sk]||MC.available;
+      const ctxLine = {
+        available: 'Next meeting at 1:00 PM · R. Kumar',
+        reserved: 'Reserved until 12:30 PM · Room free at 12:30',
+        'starts-soon': 'Meeting begins in 6 minutes',
+        occupied: '3 people detected · no meeting scheduled'
+      }[sk];
+      const mtgLabel = {available:'NEXT MEETING',reserved:'CURRENT MEETING','starts-soon':'STARTING SOON',occupied:'NEXT MEETING'}[sk];
+      const mtgTitle = {available:'Daily Status Meeting',reserved:'Product Demo','starts-soon':'Daily Status Meeting',occupied:'Daily Status Meeting'}[sk];
+      const mtgTime  = {available:'1:00 – 1:30 PM · R. Kumar',reserved:'until 12:30 PM · J. Williams','starts-soon':'12:13 – 1:00 PM · R. Kumar',occupied:'1:00 – 1:30 PM · R. Kumar'}[sk];
+      return(
+        <div onClick={onWake} style={{position:'absolute',inset:0,cursor:'pointer',userSelect:'none',background:BG,fontFamily:SANS}}>
+          {/* Status-color bar — thin, precise, top edge */}
+          <div style={{position:'absolute',top:0,left:0,right:0,height:'3px',background:st.c}}/>
+          {/* Brass rule below top bar */}
+          <div style={{position:'absolute',top:'3px',left:0,right:0,height:'1px',background:BRASS_DIM}}/>
+
+          {/* Room name — top, serif */}
+          <div style={{position:'absolute',top:22,left:0,right:0,textAlign:'center'}}>
+            <div style={{fontFamily:SERIF,fontSize:'30px',fontWeight:700,color:C1,letterSpacing:'0.06em',lineHeight:1.1}}>{ROOM}</div>
+          </div>
+
+          {/* Status block — vertically centered between room name and clock */}
+          {/* Using flex column centered in a fixed zone: top 72px to ~540px */}
+          <div style={{
+            position:'absolute',top:76,bottom:110,left:0,right:0,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+            gap:0
+          }}>
+            {/* Top brass rule */}
+            <div style={{width:'340px',height:'1px',background:BRASS_MID,marginBottom:'26px'}}/>
+
+            {/* Status word — the hero */}
+            <div style={{
+              fontFamily:SERIF,
+              fontSize:'78px',
+              fontWeight:400,
+              color:st.c,
+              letterSpacing:'0.09em',
+              lineHeight:1,
+              marginBottom:'12px',
+              textAlign:'center'
+            }}>{st.label}</div>
+
+            {/* Context line */}
+            <div style={{fontSize:'13px',color:C5,letterSpacing:'0.04em',marginBottom:'28px',textAlign:'center',fontFamily:SANS}}>{ctxLine}</div>
+
+            {/* Bottom brass rule */}
+            <div style={{width:'340px',height:'1px',background:BRASS_MID,marginBottom:'24px'}}/>
+
+            {/* Meeting info */}
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:'8.5px',fontWeight:700,color:BRASS,letterSpacing:'0.20em',textTransform:'uppercase',marginBottom:'8px',fontFamily:SANS}}>{mtgLabel}</div>
+              <div style={{fontFamily:SERIF,fontSize:'17px',fontWeight:700,color:C7,marginBottom:'4px'}}>{mtgTitle}</div>
+              <div style={{fontSize:'13px',color:C5,letterSpacing:'0.02em',fontFamily:SANS}}>{mtgTime}</div>
+            </div>
+          </div>
+
+          {/* Clock — bottom left, serif numerals */}
+          <div style={{position:'absolute',bottom:20,left:24}}>
+            <div style={{fontFamily:SERIF,fontSize:'40px',fontWeight:400,color:C7,lineHeight:1,letterSpacing:'-0.01em'}}>
+              12:07 <span style={{fontSize:'18px',color:C3}}>PM</span>
+            </div>
+            <div style={{fontSize:'11.5px',color:C3,marginTop:'5px',letterSpacing:'0.06em',fontFamily:SANS}}>Monday, June 12, 2026</div>
+          </div>
+
+          {/* Touch prompt — bottom right */}
+          <div style={{position:'absolute',bottom:24,right:24,textAlign:'right'}}>
+            <div style={{fontSize:'9.5px',color:C15,letterSpacing:'0.12em',textTransform:'uppercase',fontFamily:SANS}}>Touch to begin</div>
+          </div>
+
+          {/* Bottom brass rule */}
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:'1px',background:BRASS_DIM}}/>
+        </div>
+      );
+    }
+
+    // ── Active Screen ──────────────────────────────────────────────────────────────
+    // Left-aligned editorial layout — status word is larger than the room name
+    // Brass hairline rules bracket the status block like a financial ledger entry
+    function ActiveScreen({sk,setO}){
+      const st=MC[sk]||MC.available;
+      return(
+        <div style={{position:'absolute',inset:0,background:BG,fontFamily:SANS}}>
+          {/* Status-color accent — thin left stripe on content area */}
+          <div style={{position:'absolute',top:0,left:0,bottom:0,width:'3px',background:st.c,opacity:0.9}}/>
+
+          {/* Content — left 70%, left-aligned */}
+          <div style={{position:'absolute',top:0,left:3,bottom:0,right:'30%',padding:'18px 26px 18px 22px',display:'flex',flexDirection:'column'}}>
+            <TBar sk={sk}/>
+
+            {/* Room name — serif, authoritative */}
+            <div style={{fontFamily:SERIF,fontSize:'24px',fontWeight:700,color:C1,letterSpacing:'0.05em',lineHeight:1.1,marginBottom:'14px'}}>{ROOM}</div>
+
+            {/* Top brass rule */}
+            <Rule/> 
+
+            {/* Status block — the editorial hero */}
+            <div style={{paddingTop:'18px',paddingBottom:'16px'}}>
+              {/* Status word */}
+              <div style={{
+                fontFamily:SERIF,
+                fontSize:'58px',
+                fontWeight:400,
+                color:st.c,
+                letterSpacing:'0.07em',
+                lineHeight:1,
+                marginBottom:'9px'
+              }}>{st.label}</div>
+
+              {/* Context / sub-text */}
+              <div style={{fontSize:'12.5px',color:C5,letterSpacing:'0.03em',lineHeight:1.5}}>
+                {sk==='available'&&<>Available for 53 minutes &nbsp;·&nbsp; <span style={{color:C7}}>Next: Daily Status Meeting</span> at 1:00 PM</>}
+                {sk==='reserved'&&<>Reserved until 12:30 PM &nbsp;·&nbsp; <span style={{color:C7}}>Available in 23 minutes</span></>}
+                {sk==='starts-soon'&&<>Meeting begins in <span style={{color:st.c}}>6 minutes</span></>}
+                {sk==='occupied'&&<>3 people detected &nbsp;·&nbsp; <span style={{color:C7}}>No reservation on file</span></>}
+              </div>
+            </div>
+
+            {/* Bottom brass rule */}
+            <Rule/>
+
+            {/* Meeting card — reserved / starts-soon */}
+            {(sk==='reserved'||sk==='starts-soon')&&(
+              <div style={{marginTop:'16px',marginBottom:'4px'}}>
+                <MCard accent={st.c} onClick={sk==='reserved'?()=>setO('meeting-details'):undefined} style={{maxWidth:'380px'}}>
+                  <div style={{fontSize:'13px',fontWeight:600,color:C1,marginBottom:'2px',letterSpacing:'0.02em'}}>{sk==='reserved'?'Product Demo':'Daily Status Meeting'}</div>
+                  <div style={{fontSize:'11px',color:C5,letterSpacing:'0.02em'}}>{sk==='reserved'?'11:30 AM – 12:30 PM · J. Williams':'12:13 – 1:00 PM · R. Kumar'}</div>
+                </MCard>
+              </div>
+            )}
+
+            {/* Action buttons — left-aligned, sharply cornered */}
+            <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginTop:'18px'}}>
+              {sk==='available'&&<>
+                <MBtn c={SG} bg={SGB} bdr={SGBD} onClick={()=>setO('new-meeting')}>Reserve This Space</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} onClick={()=>setO('book-later')}>Book Later</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} onClick={()=>setO('nearby-rooms')}>Find Nearby Room</MBtn>
+              </>}
+              {sk==='occupied'&&<>
+                <MBtn c={SB} bg={SBB} bdr={SBBD} onClick={()=>setO('new-meeting')}>Reserve This Space</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} onClick={()=>setO('book-later')}>Book Later</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} onClick={()=>setO('nearby-rooms')}>Find Nearby Room</MBtn>
+              </>}
+              {sk==='reserved'&&<>
+                <MBtn c={SG} bg={SGB} bdr={SGBD} sm>Check In</MBtn>
+                <MBtn c={SR} bg={SRB} bdr={SRBD} sm>End Early</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} sm>Extend</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} sm onClick={()=>setO('book-later')}>Book Later</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} sm onClick={()=>setO('nearby-rooms')}>Find Nearby Room</MBtn>
+              </>}
+              {sk==='starts-soon'&&<>
+                <MBtn c={SA} bg={SAB} bdr={SABD} sm>Check In Early</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} sm onClick={()=>setO('book-later')}>Book Later</MBtn>
+                <MBtn c={C5} bg={C05} bdr={C08} sm onClick={()=>setO('nearby-rooms')}>Find Nearby Room</MBtn>
+              </>}
+            </div>
+
+            {/* Bottom bar */}
+            <div style={{position:'absolute',bottom:'13px',left:'22px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{width:'26px',height:'26px',border:`1px solid ${C08}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',color:C5,cursor:'pointer',borderRadius:'2px'}}>ⓘ</div>
+              <button onClick={()=>setO('maintenance')} style={{padding:'7px 14px',background:SAB,border:`1px solid ${SABD}`,borderRadius:'3px',color:SA,fontSize:'11px',fontWeight:600,cursor:'pointer',letterSpacing:'0.04em',fontFamily:SANS}}>Report Issue</button>
+            </div>
+          </div>
+
+          <VTL sk={sk}/>
+
+          {/* QR — bottom left of content area, inset plate style */}
+          <div onClick={()=>setO('qr-code')} style={{position:'absolute',bottom:'10px',left:'12px',zIndex:25,display:'flex',alignItems:'center',gap:'10px',padding:'7px 10px',background:BG2,border:`1px solid ${BRASS_DIM}`,cursor:'pointer'}}>
+            <MiniQR size={72}/>
+            <div>
+              <div style={{fontSize:'8px',color:C5,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'2px',fontFamily:SANS}}>Scan to book</div>
+              <div style={{fontSize:'7.5px',color:C3,fontFamily:SANS,letterSpacing:'0.04em'}}>or NFC tag →</div>
+            </div>
+          </div>
+
+          {/* NFC — bottom right */}
+          <div style={{position:'absolute',bottom:'10px',right:'10px',zIndex:25,padding:'5px 7px',background:C1,display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
+            <NFCLogo size={26} fill="#1a1a1a"/>
+            <span style={{fontSize:'7px',color:'#1a1a1a',fontWeight:700,letterSpacing:'0.1em',fontFamily:SANS}}>NFC</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Overlays ──────────────────────────────────────────────────────────────────
+    function NewMtgOverlay({onClose,advancedOnly=false}){
+      const [showAdv,setShowAdv]=useState(advancedOnly);
+      const [title,setTitle]=useState('Walk Up Meeting');
+      const qb=[{t:'12:30 PM',dur:'23 min',ok:true},{t:'1:00 PM',dur:'53 min',ok:true},{t:'1:30 PM',dur:'83 min',ok:false},{t:'2:00 PM',dur:'113 min',ok:false}];
+      const lbl={fontSize:'9px',color:C5,fontWeight:600,letterSpacing:'0.10em',textTransform:'uppercase',marginBottom:'5px',fontFamily:SANS,display:'block'};
+      return(
+        <OWrap title={advancedOnly?'Book This Room Later':'Reserve Room'} onClose={onClose}>
+          <div style={{display:'flex',flexDirection:'column',gap:'14px',fontFamily:SANS}}>
+            <div style={{fontSize:'12px',color:C5,letterSpacing:'0.04em'}}>{ROOM}</div>
+            <div><span style={lbl}>Meeting Title <span style={{color:SG,fontWeight:400,textTransform:'none',letterSpacing:0}}>· editable</span></span>
+              <input value={title} onChange={e=>setTitle(e.target.value)} style={{width:'100%',boxSizing:'border-box',background:C05,border:`1px solid ${C15}`,borderRadius:'2px',padding:'9px 11px',color:C1,fontSize:'13px',fontWeight:500,outline:'none',fontFamily:SANS,letterSpacing:'0.02em'}}/>
+            </div>
+            {!advancedOnly&&(<div>
+              <span style={lbl}>Quick Book</span>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                {qb.map(({t,dur,ok})=>(<button key={t} onClick={ok?onClose:undefined} disabled={!ok} style={{padding:'12px 8px',background:ok?SGB:C05,border:`1px solid ${ok?SGBD:C08}`,borderRadius:'2px',cursor:ok?'pointer':'not-allowed',display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',opacity:ok?1:0.35,fontFamily:SANS}}>
+                  <div style={{fontSize:'15px',fontWeight:600,color:ok?C1:C5}}>Until {t}</div>
+                  <div style={{fontSize:'11px',color:ok?C5:C3}}>{dur}</div>
+                </button>))}
+              </div>
+              <div style={{fontSize:'10px',color:C3,marginTop:'7px',textAlign:'center',letterSpacing:'0.03em'}}>Next meeting 1:00 PM · later slots unavailable</div>
+            </div>)}
+            <div style={{borderTop:advancedOnly?'none':`1px solid ${BRASS_DIM}`,paddingTop:advancedOnly?'0':'12px'}}>
+              {!advancedOnly&&(<button onClick={()=>setShowAdv(x=>!x)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',width:'100%',padding:'8px',background:'transparent',border:`1px solid ${C08}`,borderRadius:'2px',color:C5,fontSize:'11.5px',cursor:'pointer',fontWeight:500,marginBottom:showAdv?'12px':'0',fontFamily:SANS,letterSpacing:'0.04em'}}>{showAdv?'▲ Hide specific time':'▼ Choose a specific time'}</button>)}
+              {(showAdv||advancedOnly)&&(<div style={{display:'flex',flexDirection:'column',gap:'11px'}}>
+                {advancedOnly&&<span style={lbl}>Date &amp; Time</span>}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
+                  {[{l:'Date',opts:['Mon Jun 12 (Today)','Tue Jun 13','Wed Jun 14','Thu Jun 15']},{l:'Start',opts:['12:30 PM','1:00 PM','1:30 PM','2:00 PM']},{l:'End',opts:['1:00 PM','1:30 PM','2:00 PM','2:30 PM']}].map(({l,opts})=>(
+                    <div key={l}><span style={lbl}>{l}</span><select style={{width:'100%',background:C05,border:`1px solid ${C08}`,borderRadius:'2px',padding:'8px 6px',color:C7,fontSize:'11px',outline:'none',cursor:'pointer',fontFamily:SANS}}>{opts.map(o=><option key={o}>{o}</option>)}</select></div>
+                  ))}
+                </div>
+                <div style={{display:'flex',justifyContent:'flex-end',gap:'8px',paddingTop:'10px',borderTop:`1px solid ${BRASS_DIM}`}}>
+                  <button onClick={onClose} style={{padding:'8px 16px',background:'transparent',border:`1px solid ${C15}`,borderRadius:'2px',color:C5,fontSize:'11.5px',fontWeight:500,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'}}>Cancel</button>
+                  <button onClick={onClose} style={{padding:'8px 18px',background:SGB,border:`1px solid ${SGBD}`,borderRadius:'2px',color:SG,fontSize:'11.5px',fontWeight:600,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'}}>Reserve Now</button>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MtgDetailsOverlay({onClose}){
+      const lbl={fontSize:'8.5px',color:C3,textTransform:'uppercase',letterSpacing:'0.10em',marginBottom:'3px',fontFamily:SANS,display:'block'};
+      return(
+        <OWrap title="Meeting Details" onClose={onClose}>
+          <div style={{fontFamily:SANS}}>
+            <div style={{fontFamily:SERIF,fontSize:'17px',fontWeight:700,color:C1,marginBottom:'2px'}}>Daily Status Meeting</div>
+            <div style={{fontSize:'11.5px',color:C5,marginBottom:'16px',letterSpacing:'0.02em'}}>1:00 – 1:30 PM · {ROOM}</div>
+            <Rule color={BRASS_DIM}/><div style={{height:'12px'}}/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'16px'}}>
+              {[['Organizer','R. Kumar'],['Attendees','4 people']].map(([l,v])=>(<div key={l} style={{padding:'10px 12px',background:C05,border:`1px solid ${C08}`,borderRadius:'2px'}}><span style={lbl}>{l}</span><div style={{fontSize:'12.5px',color:C7,fontWeight:600}}>{v}</div></div>))}
+            </div>
+            <div style={{display:'flex',gap:'8px',paddingTop:'12px',borderTop:`1px solid ${BRASS_DIM}`}}>
+              <MBtn c={SR} bg={SRB} bdr={SRBD} sm onClick={onClose}>End Early</MBtn>
+              <MBtn c={C5} bg={C05} bdr={C08} sm onClick={onClose}>Extend</MBtn>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function NearbyOverlay({onClose,view,setView}){
+      const Tog=()=>(<div style={{display:'flex',gap:'3px',background:C05,border:`1px solid ${C08}`,borderRadius:'2px',padding:'3px'}}>{['list','map'].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:'4px 12px',borderRadius:'2px',background:view===v?C15:'transparent',border:'none',color:view===v?C1:C5,fontSize:'10.5px',fontWeight:600,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'}}>{v==='list'?'≡ List':'⊞ Map'}</button>))}</div>);
+      return(<OWrap title="Nearby Rooms" subtitle={<Tog/>} onClose={onClose}>{view==='list'?<NearbyList onClose={onClose}/>:<NearbyMap onClose={onClose}/>}</OWrap>);
+    }
+    function NearbyList({onClose}){
+      return(<div style={{display:'flex',flexDirection:'column',gap:'6px',fontFamily:SANS}}>{NEARBY.map((r,i)=>(<div key={i} onClick={r.ok?onClose:undefined} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 12px',background:C05,border:`1px solid ${r.ok?C08:BRASS_TR}`,borderLeft:`2px solid ${r.ok?BRASS_MID:C08}`,cursor:r.ok?'pointer':'default',opacity:r.ok?1:0.45}}><div><div style={{fontSize:'12.5px',fontWeight:600,color:r.ok?C1:C5,marginBottom:'2px',letterSpacing:'0.02em'}}>{r.n}</div><div style={{fontSize:'10px',color:C3,letterSpacing:'0.02em'}}>{r.f} · {r.seats} seats{!r.ok?` · Free at ${r.free}`:''}</div></div><span style={{fontSize:'11px',color:r.ok?SG:C3,fontWeight:600,letterSpacing:'0.02em'}}>{r.ok?`${r.dur} →`:'Reserved'}</span></div>))}</div>);
+    }
+    function NearbyMap({onClose}){
+      const rooms=[{id:'640',x:8,y:7,w:26,h:32,ok:true,cur:false},{id:'645',x:36,y:7,w:26,h:32,ok:false,cur:true},{id:'650',x:64,y:7,w:26,h:32,ok:true,cur:false},{id:'660',x:8,y:60,w:26,h:32,ok:false,cur:false},{id:'710',x:36,y:60,w:26,h:32,ok:true,cur:false},{id:'3A',x:64,y:60,w:26,h:32,ok:true,cur:false}];
+      return(<div style={{fontFamily:SANS}}><div style={{fontSize:'10px',color:C3,marginBottom:'8px',letterSpacing:'0.03em'}}>3rd Floor, Plano · Tap an available room to book</div><svg viewBox="0 0 100 100" style={{width:'100%',maxHeight:'200px',background:C05,border:`1px solid ${BRASS_DIM}`}}><rect x="0" y="41" width="100" height="17" fill="rgba(240,237,230,0.03)" stroke={BRASS_TR} strokeWidth="0.4"/><text x="50" y="51" textAnchor="middle" fontSize="3.8" fill={BRASS} fontWeight="600" letterSpacing="0.5">CORRIDOR</text>{rooms.map(r=>(<g key={r.id} onClick={r.ok&&!r.cur?onClose:undefined} style={{cursor:r.ok&&!r.cur?'pointer':'default'}}><rect x={r.x} y={r.y} width={r.w} height={r.h} fill={r.cur?SAB:r.ok?SGB:SRB} stroke={r.cur?SA:r.ok?SG:SR} strokeWidth={r.cur?1.2:0.7}/><text x={r.x+r.w/2} y={r.y+r.h/2-2.5} textAnchor="middle" fontSize="4.5" fontWeight="700" fill={r.cur?SA:r.ok?SG:SR}>{r.id}</text><text x={r.x+r.w/2} y={r.y+r.h/2+5} textAnchor="middle" fontSize="3" fill="rgba(240,237,230,0.35)">{r.cur?'(here)':r.ok?'Available':'Reserved'}</text></g>))}</svg><div style={{display:'flex',gap:'12px',marginTop:'9px',fontSize:'9.5px',color:C3,letterSpacing:'0.03em'}}>{[[SA,'This Room'],[SG,'Available'],[SR,'Reserved']].map(([c,l])=><span key={l}><span style={{color:c}}>■</span> {l}</span>)}</div></div>);
+    }
+    function QROverlay({onClose}){
+      return(
+        <OWrap title="Book via Phone" onClose={onClose}>
+          <div style={{display:'flex',gap:'20px',alignItems:'flex-start',fontFamily:SANS}}>
+            <div style={{flexShrink:0,padding:'8px',background:C1,border:`1px solid ${BRASS_DIM}`}}>
+              <svg viewBox="0 0 21 21" width="120" height="120">{QR_BITS.map((row,r)=>row.map((b,c)=>b?<rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#1a1a1a"/>:null))}</svg>
+            </div>
+            <div>
+              <div style={{fontFamily:SERIF,fontSize:'14px',fontWeight:700,color:C1,marginBottom:'8px'}}>Scan to book on your phone</div>
+              <div style={{fontSize:'11.5px',color:C5,lineHeight:1.65,marginBottom:'13px'}}>Opens your calendar with this room pre-filled:<br/><br/><strong style={{color:C7,fontFamily:SERIF}}>{ROOM}</strong><br/><span style={{fontSize:'10px',letterSpacing:'0.02em'}}>pl-conf-645@company.com</span></div>
+              <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',background:SBB,border:`1px solid ${SBBD}`,borderRadius:'2px',marginBottom:'7px'}}><div style={{width:'6px',height:'6px',background:SB,flexShrink:0}}/><span style={{fontSize:'10.5px',color:SB,fontWeight:600,letterSpacing:'0.03em'}}>Or tap NFC tag — lower-right corner of panel</span></div>
+              <div style={{fontSize:'9.5px',color:C3,letterSpacing:'0.04em'}}>M365 + Google Calendar · extensible architecture</div>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MaintOverlay({onClose}){
+      const [sel,setSel]=useState(new Set());
+      const toggle=i=>setSel(prev=>{const n=new Set(prev);n.has(i)?n.delete(i):n.add(i);return n;});
+      const hasAny=sel.size>0;
+      return(
+        <OWrap title="Report Maintenance Issues" onClose={onClose}>
+          <div style={{fontSize:'10.5px',color:C3,marginBottom:'11px',letterSpacing:'0.03em',fontFamily:SANS}}>Select all that apply</div>
+          <div style={{display:'flex',flexDirection:'column',gap:'6px',marginBottom:'13px',fontFamily:SANS}}>
+            {MAINT.map((item,i)=>(<button key={i} onClick={()=>toggle(i)} style={{display:'flex',alignItems:'center',gap:'11px',padding:'10px 12px',background:sel.has(i)?SAB:C05,border:`1px solid ${sel.has(i)?SABD:C08}`,borderLeft:`2px solid ${sel.has(i)?SA:BRASS_DIM}`,borderRadius:'0 2px 2px 0',cursor:'pointer',textAlign:'left',minHeight:'42px'}}>
+              <div style={{width:'14px',height:'14px',flexShrink:0,border:`1.5px solid ${sel.has(i)?SA:C15}`,background:sel.has(i)?SA:'transparent',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'1px'}}>
+                {sel.has(i)&&<svg width="9" height="9" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke={BG} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{fontSize:'12px',color:sel.has(i)?C1:C7,fontWeight:sel.has(i)?600:400,letterSpacing:'0.02em'}}>{item}</span>
+            </button>))}
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:'10px',borderTop:`1px solid ${BRASS_DIM}`,fontFamily:SANS}}>
+            <span style={{fontSize:'10px',color:C3,letterSpacing:'0.03em'}}>{sel.size>0?`${sel.size} item${sel.size>1?'s':''} selected`:''}</span>
+            <div style={{display:'flex',gap:'8px'}}>
+              <button onClick={onClose} style={{padding:'8px 16px',background:'transparent',border:`1px solid ${C15}`,borderRadius:'2px',color:C5,fontSize:'11.5px',fontWeight:500,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'}}>Cancel</button>
+              <button onClick={onClose} style={{padding:'8px 16px',background:hasAny?SAB:C05,border:`1px solid ${hasAny?SABD:C08}`,borderRadius:'2px',color:hasAny?SA:C15,fontSize:'11.5px',fontWeight:600,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'}}>Submit Report</button>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MaintModeOverlay(){
+      return(
+        <div style={{position:'absolute',inset:0,background:'rgba(5,7,11,0.94)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'14px',zIndex:200,fontFamily:SANS}}>
+          <div style={{width:'48px',height:'1px',background:SA,marginBottom:'4px'}}/>
+          <div style={{fontFamily:SERIF,fontSize:'22px',fontWeight:700,color:C1,letterSpacing:'0.04em'}}>Room Unavailable</div>
+          <div style={{fontSize:'13.5px',color:C5,textAlign:'center',maxWidth:'290px',lineHeight:1.65,letterSpacing:'0.02em'}}>This room is currently under maintenance and is not available for booking.</div>
+          <div style={{padding:'8px 20px',background:SAB,border:`1px solid ${SABD}`,borderRadius:'2px',fontSize:'12px',color:SA,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase'}}>Maintenance In Progress</div>
+          <div style={{marginTop:'4px',fontSize:'9.5px',color:C15,textAlign:'center',maxWidth:'280px',lineHeight:1.65,letterSpacing:'0.04em'}}>[FIRMWARE-OWNED] This screen cannot be dismissed by the user.<br/>Contact your administrator or facility manager.</div>
+          <div style={{width:'48px',height:'1px',background:SA,marginTop:'4px'}}/>
+        </div>
+      );
+    }
+
+    function App(){
+      const [sc,setSc]=useState('idle-available');
+      const [ov,setOv]=useState(null);
+      const [nv,setNv]=useState('list');
+      const setO=key=>{setOv(null);setTimeout(()=>setOv(key),0);};
+      const isIdle=sc.startsWith('idle');
+      const handleWake=()=>{setSc(sc.slice(5));setOv(null);};
+      const BASE=[
+        {k:'idle-available',l:'Idle · Available'},{k:'idle-reserved',l:'Idle · Reserved'},
+        {k:'idle-starts-soon',l:'Idle · Starts Soon'},{k:'idle-occupied',l:'Idle · Occupied'},
+        {k:'available',l:'Active · Available'},{k:'reserved',l:'Active · Reserved'},
+        {k:'starts-soon',l:'Active · Starts Soon'},{k:'occupied',l:'Active · Occupied'},
+      ];
+      const OVS=[
+        {k:'new-meeting',l:'New Meeting'},{k:'book-later',l:'Book Later'},
+        {k:'meeting-details',l:'Meeting Details'},{k:'nearby-rooms',l:'Nearby Rooms'},
+        {k:'qr-code',l:'QR / NFC'},{k:'maintenance',l:'Maintenance Req.'},
+        {k:'maintenance-mode',l:'⚠ Maint. Mode'},
+      ];
+      const bs=(active,amber=false)=>({padding:'4px 10px',background:active?(amber?SAB:C15):C05,border:`1px solid ${active?(amber?SABD:C3):C08}`,borderRadius:'2px',color:active?(amber?SA:C1):C5,fontSize:'9.5px',fontWeight:600,cursor:'pointer',fontFamily:SANS,letterSpacing:'0.04em'});
+      return(
+        <div style={{fontFamily:SANS,background:'#06080c',minHeight:'100vh',padding:'14px 10px',userSelect:'none'}}>
+          <div style={{textAlign:'center',marginBottom:'9px'}}>
+            <div style={{fontSize:'10px',fontWeight:700,color:BRASS,letterSpacing:'0.20em',fontFamily:SANS}}>CRESTRON SCHEDULING — MERIDIAN</div>
+            <div style={{fontSize:'9px',color:C15,marginTop:'2px',fontFamily:SANS}}>Fixed 16:10 · TSW-1080 10.1" · 1280×800 &nbsp;·&nbsp; Click idle screens to wake</div>
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'5px',marginBottom:'8px',justifyContent:'center'}}>
+            {BASE.map(({k,l})=>(<button key={k} onClick={()=>{setSc(k);setOv(null);}} style={bs(sc===k&&!ov)}>{l}</button>))}
+            <div style={{width:'1px',background:BRASS_TR,margin:'0 2px'}}/>
+            {OVS.map(({k,l})=>(<button key={k} onClick={()=>{setSc('available');setO(k);}} style={bs(ov===k,true)}>{l}</button>))}
+          </div>
+          <div style={{position:'relative',width:'100%',maxWidth:'1050px',margin:'0 auto',aspectRatio:'16/10',overflow:'hidden',borderRadius:'2px',border:`1px solid ${BRASS_MID}`,boxShadow:`0 0 0 1px ${BRASS_TR}, 0 24px 64px rgba(0,0,0,0.85)`}}>
+            {isIdle&&!ov&&<IdleScreen sk={sc.slice(5)} onWake={handleWake}/>}
+            {!isIdle&&!ov&&<ActiveScreen sk={sc} setO={setOv}/>}
+            {ov&&<ActiveScreen sk="available" setO={()=>{}}/>}
+            {ov==='new-meeting'&&<NewMtgOverlay onClose={()=>setOv(null)}/>}
+            {ov==='book-later'&&<NewMtgOverlay advancedOnly={true} onClose={()=>setOv(null)}/>}
+            {ov==='meeting-details'&&<MtgDetailsOverlay onClose={()=>setOv(null)}/>}
+            {ov==='nearby-rooms'&&<NearbyOverlay onClose={()=>setOv(null)} view={nv} setView={setNv}/>}
+            {ov==='qr-code'&&<QROverlay onClose={()=>setOv(null)}/>}
+            {ov==='maintenance'&&<MaintOverlay onClose={()=>setOv(null)}/>}
+            {ov==='maintenance-mode'&&<MaintModeOverlay/>}
+          </div>
+          <div style={{display:'flex',gap:'14px',justifyContent:'center',marginTop:'9px',flexWrap:'wrap'}}>
+            {[[SG,'Available'],[SR,'Reserved'],[SA,'Starts Soon'],[SB,'Occupied']].map(([c,l])=>(<div key={l} style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'9px',color:C3,fontFamily:SANS,letterSpacing:'0.04em'}}><div style={{width:'6px',height:'6px',background:c}}/>{l}</div>))}
+          </div>
+        </div>
+      );
+    }
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
