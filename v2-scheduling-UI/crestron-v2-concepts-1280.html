@@ -56,7 +56,7 @@
     function OccBadge({mode,people,count}){
       if(!mode||mode==='none')return null;
       const ic=people?T:W3;
-      return(<div style={{display:'flex',alignItems:'center',gap:'3px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill={ic} style={{flexShrink:0}}><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>{mode==='counter'&&<span style={{fontSize:'11px',fontWeight:700,color:ic,lineHeight:1}}>{count}</span>}</div>);
+      return(<div style={{display:'flex',alignItems:'center',gap:'5px'}}><svg width="22" height="22" viewBox="0 0 24 24" fill={ic} style={{flexShrink:0}}><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>{mode==='counter'&&<span style={{fontSize:'15px',fontWeight:700,color:ic,lineHeight:1}}>{count}</span>}</div>);
     }
     function MiniQR({size=64}){
       return(<div style={{background:W1,borderRadius:'6px',padding:'5px',display:'inline-block',flexShrink:0}}><svg viewBox="0 0 21 21" width={size} height={size}>{QR_BITS.map((row,r)=>row.map((b,c)=>b?<rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#000"/>:null))}</svg></div>);
@@ -69,28 +69,28 @@
       const inRange=m=>m>=S&&m<=E;
       const hours=[9,10,11,12,13,14,15,16,17,18];
       return(
-        <div style={{position:'absolute',right:0,top:0,bottom:0,width:'30%',borderLeft:`1px solid ${W08}`,display:'flex',flexDirection:'column',overflow:'hidden',background:'rgba(0,0,0,0.38)'}}>
+        <div style={{position:'absolute',right:0,top:0,bottom:0,width:'35%',borderLeft:`1px solid ${W08}`,display:'flex',flexDirection:'column',overflow:'hidden',background:'rgba(0,0,0,0.38)'}}>
           <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:st.tint,pointerEvents:'none'}}/>
-          <div style={{padding:'7px 0 5px',textAlign:'center',fontSize:'9.5px',fontWeight:700,letterSpacing:'0.1em',color:W3,textTransform:'uppercase',borderBottom:`1px solid ${W08}`,flexShrink:0,position:'relative'}}>TODAY</div>
+          <div style={{padding:'9px 0 7px',textAlign:'center',fontSize:'13px',fontWeight:700,letterSpacing:'0.1em',color:W3,textTransform:'uppercase',borderBottom:`1px solid ${W08}`,flexShrink:0,position:'relative'}}>TODAY</div>
           <div style={{flex:1,position:'relative',overflow:'hidden'}}>
-            {hours.map(h=>(<div key={h} style={{position:'absolute',top:p(h*60),left:0,right:0,display:'flex',alignItems:'center',pointerEvents:'none'}}><span style={{fontSize:'9px',color:W3,width:'27px',textAlign:'right',paddingRight:'4px',lineHeight:1,flexShrink:0}}>{h>12?h-12:h}{h>=12?'p':'a'}</span><div style={{flex:1,height:'1px',background:st.linC}}/></div>))}
+            {hours.map(h=>(<div key={h} style={{position:'absolute',top:p(h*60),left:0,right:0,display:'flex',alignItems:'center',pointerEvents:'none'}}><span style={{fontSize:'13px',color:W3,width:'36px',textAlign:'right',paddingRight:'6px',lineHeight:1,flexShrink:0}}>{h>12?h-12:h}{h>=12?'p':'a'}</span><div style={{flex:1,height:'1px',background:st.linC}}/></div>))}
             {sched.map(m=>{
               if(!inRange(m.s)&&!inRange(m.e))return null;
               const clampS=Math.max(m.s,S),clampE=Math.min(m.e,E);
               const isCur=m.s<=NOW&&m.e>NOW;
               const topV=pp(clampS),htV=pp(clampE)-pp(clampS);
-              return(<div key={m.id} style={{position:'absolute',top:`${topV}%`,height:`${htV}%`,minHeight:'10px',left:'29px',right:'4px',background:isCur?'rgba(255,255,255,0.38)':'rgba(255,255,255,0.20)',borderRadius:'3px',border:`1px solid rgba(255,255,255,${isCur?0.58:0.32})`,overflow:'hidden',zIndex:2}}>{htV>4&&<div style={{padding:'2px 4px',fontSize:'9px',color:isCur?W1:W5,fontWeight:isCur?700:500,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.t}</div>}</div>);
+              return(<div key={m.id} style={{position:'absolute',top:`${topV}%`,height:`${htV}%`,minHeight:'14px',left:'44px',right:'5px',background:isCur?'rgba(255,255,255,0.38)':'rgba(255,255,255,0.20)',borderRadius:'3px',border:`1px solid rgba(255,255,255,${isCur?0.58:0.32})`,overflow:'hidden',zIndex:2}}>{htV>3&&<div style={{padding:'4px 6px',fontSize:'13px',color:isCur?W1:W5,fontWeight:isCur?700:500,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.t}</div>}</div>);
             })}
-            {inRange(NOW)&&(<div style={{position:'absolute',top:p(NOW),left:0,right:0,display:'flex',alignItems:'center',zIndex:10,pointerEvents:'none'}}><div style={{width:'7px',height:'7px',borderRadius:'50%',background:st.c,marginLeft:'4px',flexShrink:0,boxShadow:`0 0 5px ${st.c}`}}/><div style={{flex:1,height:'2px',background:st.c,opacity:0.9}}/></div>)}
+            {inRange(NOW)&&(<div style={{position:'absolute',top:p(NOW),left:0,right:0,display:'flex',alignItems:'center',zIndex:10,pointerEvents:'none'}}><div style={{width:'10px',height:'10px',borderRadius:'50%',background:st.c,marginLeft:'5px',flexShrink:0,boxShadow:`0 0 6px ${st.c}`}}/><div style={{flex:1,height:'2px',background:st.c,opacity:0.9}}/></div>)}
           </div>
         </div>
       );
     }
     function Pill({c,bg,bdr,sm=false,children,onClick}){
-      return(<button onClick={onClick} style={{padding:sm?'8px 14px':'10px 22px',background:bg,border:`1.5px solid ${bdr}`,borderRadius:'999px',color:c,fontSize:sm?'12px':'13.5px',fontWeight:600,cursor:'pointer',minHeight:sm?'40px':'46px',lineHeight:1.2,whiteSpace:'nowrap'}}>{children}</button>);
+      return(<button onClick={onClick} style={{padding:sm?'11px 20px':'14px 28px',background:bg,border:`1.5px solid ${bdr}`,borderRadius:'999px',color:c,fontSize:sm?'15px':'17px',fontWeight:600,cursor:'pointer',minHeight:sm?'52px':'58px',lineHeight:1.2,whiteSpace:'nowrap'}}>{children}</button>);
     }
     function SCard({children,style={},onClick}){
-      return(<div onClick={onClick} style={{background:CB,border:`1px solid ${CBD}`,borderRadius:'10px',padding:'11px 14px',cursor:onClick?'pointer':undefined,...style}}>{children}</div>);
+      return(<div onClick={onClick} style={{background:CB,border:`1px solid ${CBD}`,borderRadius:'10px',padding:'15px 18px',cursor:onClick?'pointer':undefined,...style}}>{children}</div>);
     }
     function TBar({sk}){
       const occ=OCC[sk]||{mode:'none'};
@@ -98,11 +98,11 @@
       return(
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'}}>
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-            <span style={{fontSize:'12px',color:W5,fontWeight:500}}>Mon Jun 12 · 12:07 PM</span>
-            {hasOcc&&<span style={{color:W15,fontSize:'10px',lineHeight:1}}>·</span>}
+            <span style={{fontSize:'16px',color:W5,fontWeight:500}}>Mon Jun 12 · 12:07 PM</span>
+            {hasOcc&&<span style={{color:W15,fontSize:'14px',lineHeight:1}}>·</span>}
             {hasOcc&&<OccBadge {...occ}/>}
           </div>
-          <span style={{fontSize:'10px',fontWeight:800,color:W15,letterSpacing:'0.1em'}}>CRESTRON</span>
+          <span style={{fontSize:'13px',fontWeight:800,color:W15,letterSpacing:'0.1em'}}>CRESTRON</span>
         </div>
       );
     }
@@ -214,45 +214,41 @@
     }
 
     // ── UPDATED: Active Screen ────────────────────────────────────────────────────
-    // Orb anchored via paddingTop (not justifyContent:center) so its Y is fixed
-    // across all states. Info area has a fixed height (68px) so buttons are always
-    // the same distance below the orb regardless of whether a meeting card is shown.
     function ActiveScreen({sk,setO}){
       const g=OG[sk]||OG.available;
       return(
-        <div style={{position:'absolute',inset:0,background:`radial-gradient(ellipse 360px 360px at 35% 50%, ${g.bg} 0%, transparent 68%), #090b10`}}>
-          {/* Content — left 70% */}
-          <div style={{position:'absolute',top:0,left:0,bottom:0,right:'30%',padding:'16px 18px',display:'flex',flexDirection:'column'}}>
+        <div style={{position:'absolute',inset:0,background:`radial-gradient(ellipse 440px 440px at 32% 50%, ${g.bg} 0%, transparent 68%), #090b10`}}>
+          {/* Content — left 65% (timeline expanded to 35%) */}
+          <div style={{position:'absolute',top:0,left:0,bottom:0,right:'35%',padding:'18px 22px',display:'flex',flexDirection:'column'}}>
             <TBar sk={sk}/>
-            <div style={{fontSize:'26px',fontWeight:800,color:W1,letterSpacing:'-0.025em',lineHeight:1.1,marginBottom:'6px'}}>{ROOM}</div>
+            <div style={{fontSize:'32px',fontWeight:800,color:W1,letterSpacing:'-0.025em',lineHeight:1.1,marginBottom:'10px'}}>{ROOM}</div>
 
             {/* Flex area: paddingTop anchors orb at a fixed Y regardless of state */}
-            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',paddingTop:'18px',gap:'14px'}}>
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',paddingTop:'22px',gap:'18px'}}>
 
               {/* Orb — always first in flow, always same Y */}
               <StatusOrb sk={sk} size='active'/>
 
-              {/* Fixed-height info zone: meeting card or supplemental text.
-                  Height is constant so buttons below never move. */}
-              <div style={{height:'68px',width:'100%',maxWidth:'360px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              {/* Fixed-height info zone */}
+              <div style={{height:'90px',width:'100%',maxWidth:'460px',display:'flex',alignItems:'center',justifyContent:'center'}}>
                 {sk==='available'&&(
-                  <span style={{fontSize:'12.5px',color:W5,textAlign:'center'}}>
+                  <span style={{fontSize:'18px',color:W5,textAlign:'center'}}>
                     Next: <strong style={{color:W7}}>Daily Status</strong> · 1:00 PM
                   </span>
                 )}
                 {sk==='occupied'&&(
-                  <span style={{fontSize:'12.5px',color:W5,textAlign:'center'}}>No meeting scheduled</span>
+                  <span style={{fontSize:'18px',color:W5,textAlign:'center'}}>No meeting scheduled</span>
                 )}
                 {(sk==='reserved'||sk==='starts-soon')&&(
                   <SCard style={{width:'100%'}} onClick={sk==='reserved'?()=>setO('meeting-details'):undefined}>
-                    <div style={{fontSize:'13.5px',fontWeight:700,color:W1,marginBottom:'2px'}}>{sk==='reserved'?'Product Demo':'Daily Status Meeting'}</div>
-                    <div style={{fontSize:'12px',color:W5}}>{sk==='reserved'?'11:30 AM – 12:30 PM · J. Williams':'12:13 – 1:00 PM · R. Kumar'}</div>
+                    <div style={{fontSize:'20px',fontWeight:700,color:W1,marginBottom:'4px'}}>{sk==='reserved'?'Product Demo':'Daily Status Meeting'}</div>
+                    <div style={{fontSize:'17px',color:W5}}>{sk==='reserved'?'11:30 AM – 12:30 PM · J. Williams':'12:13 – 1:00 PM · R. Kumar'}</div>
                   </SCard>
                 )}
               </div>
 
               {/* Action pills */}
-              <div style={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'8px'}}>
+              <div style={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'10px'}}>
                 {sk==='available'&&<>
                   <Pill c={G} bg={GB} bdr={GBD} onClick={()=>setO('new-meeting')}>Reserve This Space</Pill>
                   <Pill c={W5} bg={CB} bdr={CBD} onClick={()=>setO('book-later')}>Book Later</Pill>
@@ -279,9 +275,9 @@
             </div>
 
             {/* Bottom bar */}
-            <div style={{position:'absolute',bottom:'13px',left:'18px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={{width:'28px',height:'28px',borderRadius:'50%',background:W05,border:`1px solid ${W08}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'13px',color:W5,cursor:'pointer'}}>ⓘ</div>
-              <button onClick={()=>setO('maintenance')} style={{display:'flex',alignItems:'center',gap:'7px',padding:'8px 16px',background:'rgba(245,158,11,0.10)',border:`1px solid ${ABD}`,borderRadius:'999px',color:A,fontSize:'12px',fontWeight:600,cursor:'pointer',minHeight:'40px'}}>Report Issue</button>
+            <div style={{position:'absolute',bottom:'14px',left:'22px',right:'22px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{width:'36px',height:'36px',borderRadius:'50%',background:W05,border:`1px solid ${W08}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',color:W5,cursor:'pointer'}}>ⓘ</div>
+              <button onClick={()=>setO('maintenance')} style={{display:'flex',alignItems:'center',gap:'8px',padding:'11px 22px',background:'rgba(245,158,11,0.10)',border:`1px solid ${ABD}`,borderRadius:'999px',color:A,fontSize:'15px',fontWeight:600,cursor:'pointer',minHeight:'52px'}}>Report Issue</button>
             </div>
           </div>
 
