@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1.0">
+  <title>Crestron v2 — UI Concepts — 1280×800</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; min-width: 1280px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const G='#22c55e',GB='rgba(34,197,94,0.15)',GBD='rgba(34,197,94,0.30)';
+    const R='#ef4444',RB='rgba(239,68,68,0.15)',RBD='rgba(239,68,68,0.30)';
+    const A='#f59e0b',AB='rgba(245,158,11,0.15)',ABD='rgba(245,158,11,0.30)';
+    const T='#14b8a6',TB='rgba(20,184,166,0.15)',TBD='rgba(20,184,166,0.30)';
+    const W1='#fafafa',W7='rgba(250,250,250,0.7)',W5='rgba(250,250,250,0.5)',W3='rgba(250,250,250,0.3)',W15='rgba(250,250,250,0.15)',W08='rgba(250,250,250,0.08)',W05='rgba(250,250,250,0.05)';
+    const CB=W05,CBD=W08;
+
+    const SC={
+      available:{c:G,bg:GB,bdr:GBD,label:'Available',tint:'rgba(34,197,94,0.13)',linC:'rgba(34,197,94,0.32)'},
+      reserved:{c:R,bg:RB,bdr:RBD,label:'Reserved',tint:'rgba(239,68,68,0.13)',linC:'rgba(239,68,68,0.32)'},
+      'starts-soon':{c:A,bg:AB,bdr:ABD,label:'Meeting Starts Soon',tint:'rgba(245,158,11,0.13)',linC:'rgba(245,158,11,0.32)'},
+      occupied:{c:T,bg:TB,bdr:TBD,label:'Occupied',tint:'rgba(20,184,166,0.13)',linC:'rgba(20,184,166,0.32)'},
+    };
+    const OG={
+      available: {ring:'rgba(34,197,94,0.82)',glow1:'rgba(34,197,94,0.52)',glow2:'rgba(34,197,94,0.24)',outer:'rgba(34,197,94,0.24)',bg:'rgba(34,197,94,0.13)'},
+      reserved:  {ring:'rgba(239,68,68,0.82)', glow1:'rgba(239,68,68,0.52)', glow2:'rgba(239,68,68,0.24)', outer:'rgba(239,68,68,0.24)', bg:'rgba(239,68,68,0.13)'},
+      'starts-soon':{ring:'rgba(245,158,11,0.82)',glow1:'rgba(245,158,11,0.52)',glow2:'rgba(245,158,11,0.24)',outer:'rgba(245,158,11,0.24)',bg:'rgba(245,158,11,0.13)'},
+      occupied:  {ring:'rgba(20,184,166,0.82)', glow1:'rgba(20,184,166,0.52)', glow2:'rgba(20,184,166,0.24)', outer:'rgba(20,184,166,0.24)', bg:'rgba(20,184,166,0.13)'},
+    };
+    const OCC={
+      available:{mode:'counter',people:false,count:0},
+      reserved:{mode:'counter',people:true,count:2},
+      'starts-soon':{mode:'sensor',people:true,count:null},
+      occupied:{mode:'counter',people:true,count:3},
+    };
+    const NOW=727,ROOM='Plano Conf 645';
+    const SCHED={
+      available:[{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960},{id:3,t:'Team Sync',o:'M. Torres',s:990,e:1020}],
+      reserved:[{id:0,t:'Product Demo',o:'J. Williams',s:660,e:750},{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+      'starts-soon':[{id:0,t:'Daily Status Meeting',o:'R. Kumar',s:733,e:803},{id:1,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+      occupied:[{id:1,t:'Daily Status Meeting',o:'R. Kumar',s:780,e:810},{id:2,t:'Q3 Planning Review',o:'S. Chen',s:900,e:960}],
+    };
+    const NEARBY=[{n:'Plano Conf 640',f:'3F',seats:6,ok:true,dur:'3h+'},{n:'Plano Conf 650',f:'3F',seats:4,ok:true,dur:'1h 30m'},{n:'Plano Conf 660',f:'3F',seats:10,ok:false,free:'2:30 PM'},{n:'Plano Conf 710',f:'4F',seats:8,ok:true,dur:'45 min'},{n:'Focus Room 3A',f:'3F',seats:2,ok:true,dur:'2h 15m'}];
+    const MAINT=['Room needs cleaning','Trash needs emptying','AV equipment issue','Temperature problem','Lighting issue','Other (associate with meeting record)'];
+    const QR_BITS=[[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,1,0,1,0,1,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,1,1,1,0,1,0,0,1,0,1,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1],[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0],[1,0,1,1,0,1,1,0,1,0,1,1,0,0,1,0,1,0,0,1,1],[0,1,0,0,1,0,0,1,1,0,1,0,1,1,0,1,0,0,1,0,0],[1,1,1,0,0,0,1,0,0,1,0,1,0,0,1,0,1,1,0,1,1],[0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,1,0,0,1,0,1],[0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,0,0,1,0],[1,0,0,0,1,0,1,1,0,1,0,0,1,0,1,1,0,1,1,0,1],[0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0],[1,1,1,1,1,1,1,0,1,0,1,0,0,1,0,1,1,0,1,0,0],[1,0,0,0,0,0,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1],[1,0,1,1,1,0,1,0,1,0,0,0,0,1,0,1,0,0,1,0,0],[1,0,1,1,1,0,1,0,0,1,1,0,1,0,1,0,1,1,0,1,1],[1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,0,0,1,0,1],[1,1,1,1,1,1,1,0,1,1,0,0,1,0,1,0,0,1,0,0,0]];
+
+    function NFCLogo({size=36,fill="white"}){
+      return(<svg viewBox="0 0 24 24" width={size} height={size} style={{display:'block'}} fill={fill} xmlns="http://www.w3.org/2000/svg"><path d="M23.958 1.98C23.895 1 23.143.256 22.145.197c-1.102-.066-4.668-.12-5.693-.12 1.832 1.264 2.082 3.644 2.255 8.066.101 2.62.01 11.799.002 12.188l-.049 2.504-9.628-9.63v-3.014l7.656 7.658c.02-1.516.04-3.492.04-5.299 0-1.76-.026-3.354-.076-4.193-.288-4.819-.737-7.077-3.253-7.962-.77-.27-1.487-.335-2.683-.351C9.728.032 2.848.037 1.854.091.8.147.09.914.042 1.9c-.048.977-.064 19.174 0 20.165.062.98.815 1.724 1.812 1.782 1.102.067 4.668.075 5.694.075-1.832-1.264-2.083-3.643-2.255-8.066-.1-2.62-.009-11.8 0-12.188l.047-2.504 9.629 9.63v3.013L7.312 6.152c-.02 1.514-.04 3.49-.04 5.298 0 1.76.026 3.354.077 4.192.288 4.82.736 7.077 3.252 7.962.77.271 1.487.337 2.683.352.987.012 7.868.006 8.861-.047 1.056-.056 1.765-.822 1.813-1.811.048-.976.064-19.127 0-20.118"/></svg>);
+    }
+    function OccBadge({mode,people,count}){
+      if(!mode||mode==='none')return null;
+      const ic=people?T:W3;
+      return(<div style={{display:'flex',alignItems:'center',gap:'3px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill={ic} style={{flexShrink:0}}><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>{mode==='counter'&&<span style={{fontSize:'11px',fontWeight:700,color:ic,lineHeight:1}}>{count}</span>}</div>);
+    }
+    function MiniQR({size=64}){
+      return(<div style={{background:W1,borderRadius:'6px',padding:'5px',display:'inline-block',flexShrink:0}}><svg viewBox="0 0 21 21" width={size} height={size}>{QR_BITS.map((row,r)=>row.map((b,c)=>b?<rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#000"/>:null))}</svg></div>);
+    }
+    function VTL({sk}){
+      const st=SC[sk]||SC.available,sched=SCHED[sk]||SCHED.available;
+      const S=9*60,E=18*60,SPAN=E-S;
+      const p=m=>((m-S)/SPAN*100).toFixed(2)+'%';
+      const pp=m=>((m-S)/SPAN*100);
+      const inRange=m=>m>=S&&m<=E;
+      const hours=[9,10,11,12,13,14,15,16,17,18];
+      return(
+        <div style={{position:'absolute',right:0,top:0,bottom:0,width:'30%',borderLeft:`1px solid ${W08}`,display:'flex',flexDirection:'column',overflow:'hidden',background:'rgba(0,0,0,0.38)'}}>
+          <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:st.tint,pointerEvents:'none'}}/>
+          <div style={{padding:'7px 0 5px',textAlign:'center',fontSize:'9.5px',fontWeight:700,letterSpacing:'0.1em',color:W3,textTransform:'uppercase',borderBottom:`1px solid ${W08}`,flexShrink:0,position:'relative'}}>TODAY</div>
+          <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+            {hours.map(h=>(<div key={h} style={{position:'absolute',top:p(h*60),left:0,right:0,display:'flex',alignItems:'center',pointerEvents:'none'}}><span style={{fontSize:'9px',color:W3,width:'27px',textAlign:'right',paddingRight:'4px',lineHeight:1,flexShrink:0}}>{h>12?h-12:h}{h>=12?'p':'a'}</span><div style={{flex:1,height:'1px',background:st.linC}}/></div>))}
+            {sched.map(m=>{
+              if(!inRange(m.s)&&!inRange(m.e))return null;
+              const clampS=Math.max(m.s,S),clampE=Math.min(m.e,E);
+              const isCur=m.s<=NOW&&m.e>NOW;
+              const topV=pp(clampS),htV=pp(clampE)-pp(clampS);
+              return(<div key={m.id} style={{position:'absolute',top:`${topV}%`,height:`${htV}%`,minHeight:'10px',left:'29px',right:'4px',background:isCur?'rgba(255,255,255,0.38)':'rgba(255,255,255,0.20)',borderRadius:'3px',border:`1px solid rgba(255,255,255,${isCur?0.58:0.32})`,overflow:'hidden',zIndex:2}}>{htV>4&&<div style={{padding:'2px 4px',fontSize:'9px',color:isCur?W1:W5,fontWeight:isCur?700:500,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{m.t}</div>}</div>);
+            })}
+            {inRange(NOW)&&(<div style={{position:'absolute',top:p(NOW),left:0,right:0,display:'flex',alignItems:'center',zIndex:10,pointerEvents:'none'}}><div style={{width:'7px',height:'7px',borderRadius:'50%',background:st.c,marginLeft:'4px',flexShrink:0,boxShadow:`0 0 5px ${st.c}`}}/><div style={{flex:1,height:'2px',background:st.c,opacity:0.9}}/></div>)}
+          </div>
+        </div>
+      );
+    }
+    function Pill({c,bg,bdr,sm=false,children,onClick}){
+      return(<button onClick={onClick} style={{padding:sm?'8px 14px':'10px 22px',background:bg,border:`1.5px solid ${bdr}`,borderRadius:'999px',color:c,fontSize:sm?'12px':'13.5px',fontWeight:600,cursor:'pointer',minHeight:sm?'40px':'46px',lineHeight:1.2,whiteSpace:'nowrap'}}>{children}</button>);
+    }
+    function SCard({children,style={},onClick}){
+      return(<div onClick={onClick} style={{background:CB,border:`1px solid ${CBD}`,borderRadius:'10px',padding:'11px 14px',cursor:onClick?'pointer':undefined,...style}}>{children}</div>);
+    }
+    function TBar({sk}){
+      const occ=OCC[sk]||{mode:'none'};
+      const hasOcc=occ.mode&&occ.mode!=='none';
+      return(
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+            <span style={{fontSize:'12px',color:W5,fontWeight:500}}>Mon Jun 12 · 12:07 PM</span>
+            {hasOcc&&<span style={{color:W15,fontSize:'10px',lineHeight:1}}>·</span>}
+            {hasOcc&&<OccBadge {...occ}/>}
+          </div>
+          <span style={{fontSize:'10px',fontWeight:800,color:W15,letterSpacing:'0.1em'}}>CRESTRON</span>
+        </div>
+      );
+    }
+    function OWrap({title,subtitle,onClose,children}){
+      return(
+        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.70)',display:'flex',alignItems:'center',justifyContent:'center',padding:'18px',zIndex:100}}>
+          <div style={{background:'#111318',border:`1px solid ${W08}`,borderRadius:'14px',width:'100%',maxWidth:'520px',overflow:'hidden'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 16px',borderBottom:`1px solid ${W08}`}}>
+              <div style={{display:'flex',alignItems:'center',gap:'10px'}}><span style={{fontSize:'15px',fontWeight:700,color:W1}}>{title}</span>{subtitle}</div>
+              <button onClick={onClose} style={{width:'26px',height:'26px',borderRadius:'50%',background:W05,border:`1px solid ${W08}`,cursor:'pointer',fontSize:'13px',color:W5,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>✕</button>
+            </div>
+            <div style={{padding:'15px 16px',maxHeight:'430px',overflowY:'auto'}}>{children}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Status Orb ────────────────────────────────────────────────────────────────
+    // size='active': D=268  size='idle': D=320 (larger, more dramatic on idle screen)
+    function StatusOrb({sk,size='active'}){
+      const st=SC[sk]||SC.available;
+      const g=OG[sk]||OG.available;
+      const D=size==='idle'?320:268;
+      const midD=size==='idle'?266:220;
+      const ctrD=size==='idle'?232:188;
+      const tSize=size==='idle'?31:26;
+      const sSize=size==='idle'?13:12;
+      const labelMap={available:'Available',reserved:'Reserved','starts-soon':'Starts Soon',occupied:'Occupied'};
+      const subMap={available:'for 53 min',reserved:'until 12:30 PM','starts-soon':'in 6 min',occupied:'no booking'};
+      return(
+        <div style={{position:'relative',width:D,height:D,flexShrink:0}}>
+          <div style={{position:'absolute',top:0,left:0,width:D,height:D,borderRadius:'50%',border:`1px solid ${g.outer}`,boxShadow:`0 0 36px 8px ${g.glow2}, 0 0 80px 24px ${g.glow2}`}}/>
+          <div style={{position:'absolute',top:(D-midD)/2,left:(D-midD)/2,width:midD,height:midD,borderRadius:'50%',border:`2.5px solid ${g.ring}`,boxShadow:`0 0 20px 5px ${g.glow1}, 0 0 44px 14px ${g.glow2}, inset 0 0 28px ${g.glow2}`}}/>
+          <div style={{position:'absolute',top:(D-ctrD)/2,left:(D-ctrD)/2,width:ctrD,height:ctrD,borderRadius:'50%',background:'radial-gradient(circle at 42% 38%, #0e1019 0%, #060810 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:5}}>
+            <span style={{fontSize:tSize,fontWeight:800,color:st.c,letterSpacing:'-0.01em',textAlign:'center',lineHeight:1.1,padding:'0 10px'}}>{labelMap[sk]||'Available'}</span>
+            <span style={{fontSize:sSize,color:W5,fontWeight:500,textAlign:'center'}}>{subMap[sk]||''}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ── UPDATED: Idle Screen — clock/date large at bottom-left, touch prompt bottom-right ──
+    // Room name is the sole top element; orb is pinned at top:68 (more room since
+    // header is now a single line); meeting info anchors below the orb; large clock
+    // sits at bottom-left using the side space; touch prompt is subtle at bottom-right.
+    function IdleScreen({sk,onWake}){
+      const st=SC[sk]||SC.available;
+      const g=OG[sk]||OG.available;
+      // Orb geometry: top:96, D=320 → bottom at 416. Meeting section at 434.
+      return(
+        <div onClick={onWake} style={{position:'absolute',inset:0,cursor:'pointer',userSelect:'none',background:`radial-gradient(ellipse 440px 440px at 50% 42%, ${g.bg} 0%, transparent 68%), #090b10`}}>
+          {/* Side bar indicators */}
+          {['left','right'].map(s=><div key={s} style={{position:'absolute',[s]:0,top:0,bottom:0,width:'10px',background:st.c,opacity:0.75}}/>)}
+
+          {/* ── Room name — top center, single line, full attention ── */}
+          <div style={{position:'absolute',top:18,left:0,right:0,textAlign:'center'}}>
+            <div style={{fontSize:'29px',fontWeight:800,color:W1,letterSpacing:'-0.01em',lineHeight:1.15}}>{ROOM}</div>
+          </div>
+
+          {/* ── Orb: pinned at top:96 (room name ~34px + 44px gap) ── */}
+          <div style={{position:'absolute',top:96,left:'50%',transform:'translateX(-50%)'}}>
+            <StatusOrb sk={sk} size='idle'/>
+          </div>
+
+          {/* ── Meeting info: anchored below orb (96+320+18=434) ── */}
+          <div style={{position:'absolute',top:434,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <div style={{width:'220px',height:'1px',background:W15,marginBottom:'14px'}}/>
+            {sk==='available'&&(
+              <div style={{textAlign:'center',maxWidth:'340px'}}>
+                <div style={{fontSize:'10px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'7px'}}>NEXT MEETING</div>
+                <div style={{fontSize:'16px',fontWeight:700,color:W1,marginBottom:'3px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'13px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
+              </div>
+            )}
+            {sk==='reserved'&&(
+              <div style={{textAlign:'center',maxWidth:'340px'}}>
+                <div style={{fontSize:'10px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'7px'}}>CURRENT MEETING</div>
+                <div style={{fontSize:'16px',fontWeight:700,color:W1,marginBottom:'3px'}}>Product Demo</div>
+                <div style={{fontSize:'13px',color:W5,marginBottom:'5px'}}>until 12:30 PM &nbsp;·&nbsp; J. Williams</div>
+                <div style={{fontSize:'12px',color:W3}}>Room free at 12:30 PM</div>
+              </div>
+            )}
+            {sk==='starts-soon'&&(
+              <div style={{textAlign:'center',maxWidth:'340px'}}>
+                <div style={{fontSize:'10px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'7px'}}>STARTING SOON</div>
+                <div style={{fontSize:'16px',fontWeight:700,color:W1,marginBottom:'3px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'13px',color:W5}}>12:13 – 1:00 PM &nbsp;·&nbsp; R. Kumar</div>
+              </div>
+            )}
+            {sk==='occupied'&&(
+              <div style={{textAlign:'center',maxWidth:'340px'}}>
+                <div style={{fontSize:'10px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'7px'}}>NEXT MEETING</div>
+                <div style={{fontSize:'16px',fontWeight:700,color:W1,marginBottom:'3px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'13px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Clock + date — large, bottom-left ── */}
+          <div style={{position:'absolute',bottom:20,left:22}}>
+            <div style={{fontSize:'42px',fontWeight:700,color:W7,lineHeight:1,letterSpacing:'-0.02em'}}>
+              12:07 <span style={{fontSize:'20px',fontWeight:500,color:W3}}>PM</span>
+            </div>
+            <div style={{fontSize:'13px',color:W3,marginTop:'5px',letterSpacing:'0.01em'}}>Monday, June 12, 2026</div>
+          </div>
+
+          {/* ── Touch prompt — subtle, bottom-right ── */}
+          <div style={{position:'absolute',bottom:24,right:22,textAlign:'right'}}>
+            <div style={{fontSize:'10.5px',color:W15,letterSpacing:'0.07em',textTransform:'uppercase'}}>Touch screen to begin</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── UPDATED: Active Screen ────────────────────────────────────────────────────
+    // Orb anchored via paddingTop (not justifyContent:center) so its Y is fixed
+    // across all states. Info area has a fixed height (68px) so buttons are always
+    // the same distance below the orb regardless of whether a meeting card is shown.
+    function ActiveScreen({sk,setO}){
+      const g=OG[sk]||OG.available;
+      return(
+        <div style={{position:'absolute',inset:0,background:`radial-gradient(ellipse 360px 360px at 35% 50%, ${g.bg} 0%, transparent 68%), #090b10`}}>
+          {/* Content — left 70% */}
+          <div style={{position:'absolute',top:0,left:0,bottom:0,right:'30%',padding:'16px 18px',display:'flex',flexDirection:'column'}}>
+            <TBar sk={sk}/>
+            <div style={{fontSize:'26px',fontWeight:800,color:W1,letterSpacing:'-0.025em',lineHeight:1.1,marginBottom:'6px'}}>{ROOM}</div>
+
+            {/* Flex area: paddingTop anchors orb at a fixed Y regardless of state */}
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',paddingTop:'18px',gap:'14px'}}>
+
+              {/* Orb — always first in flow, always same Y */}
+              <StatusOrb sk={sk} size='active'/>
+
+              {/* Fixed-height info zone: meeting card or supplemental text.
+                  Height is constant so buttons below never move. */}
+              <div style={{height:'68px',width:'100%',maxWidth:'360px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {sk==='available'&&(
+                  <span style={{fontSize:'12.5px',color:W5,textAlign:'center'}}>
+                    Next: <strong style={{color:W7}}>Daily Status</strong> · 1:00 PM
+                  </span>
+                )}
+                {sk==='occupied'&&(
+                  <span style={{fontSize:'12.5px',color:W5,textAlign:'center'}}>No meeting scheduled</span>
+                )}
+                {(sk==='reserved'||sk==='starts-soon')&&(
+                  <SCard style={{width:'100%'}} onClick={sk==='reserved'?()=>setO('meeting-details'):undefined}>
+                    <div style={{fontSize:'13.5px',fontWeight:700,color:W1,marginBottom:'2px'}}>{sk==='reserved'?'Product Demo':'Daily Status Meeting'}</div>
+                    <div style={{fontSize:'12px',color:W5}}>{sk==='reserved'?'11:30 AM – 12:30 PM · J. Williams':'12:13 – 1:00 PM · R. Kumar'}</div>
+                  </SCard>
+                )}
+              </div>
+
+              {/* Action pills */}
+              <div style={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'8px'}}>
+                {sk==='available'&&<>
+                  <Pill c={G} bg={GB} bdr={GBD} onClick={()=>setO('new-meeting')}>Reserve This Space</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} onClick={()=>setO('book-later')}>Book Later</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} onClick={()=>setO('nearby-rooms')}>Find Nearby Room</Pill>
+                </>}
+                {sk==='occupied'&&<>
+                  <Pill c={T} bg={TB} bdr={TBD} onClick={()=>setO('new-meeting')}>Reserve This Space</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} onClick={()=>setO('book-later')}>Book Later</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} onClick={()=>setO('nearby-rooms')}>Find Nearby Room</Pill>
+                </>}
+                {sk==='reserved'&&<>
+                  <Pill c={G} bg={GB} bdr={GBD} sm>Check In</Pill>
+                  <Pill c={R} bg={RB} bdr={RBD} sm>End Early</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} sm>Extend</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} sm onClick={()=>setO('book-later')}>Book Later</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} sm onClick={()=>setO('nearby-rooms')}>Find Nearby Room</Pill>
+                </>}
+                {sk==='starts-soon'&&<>
+                  <Pill c={A} bg={AB} bdr={ABD} sm>Check In Early</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} sm onClick={()=>setO('book-later')}>Book Later</Pill>
+                  <Pill c={W5} bg={CB} bdr={CBD} sm onClick={()=>setO('nearby-rooms')}>Find Nearby Room</Pill>
+                </>}
+              </div>
+            </div>
+
+            {/* Bottom bar */}
+            <div style={{position:'absolute',bottom:'13px',left:'18px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{width:'28px',height:'28px',borderRadius:'50%',background:W05,border:`1px solid ${W08}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'13px',color:W5,cursor:'pointer'}}>ⓘ</div>
+              <button onClick={()=>setO('maintenance')} style={{display:'flex',alignItems:'center',gap:'7px',padding:'8px 16px',background:'rgba(245,158,11,0.10)',border:`1px solid ${ABD}`,borderRadius:'999px',color:A,fontSize:'12px',fontWeight:600,cursor:'pointer',minHeight:'40px'}}>Report Issue</button>
+            </div>
+          </div>
+
+          <VTL sk={sk}/>
+
+          {/* QR code widget */}
+          <div onClick={()=>setO('qr-code')} style={{position:'absolute',bottom:'10px',left:'10px',zIndex:25,display:'flex',flexDirection:'column',alignItems:'center',gap:'5px',padding:'8px',background:'rgba(0,0,0,0.72)',border:`1px solid ${W08}`,borderRadius:'12px',cursor:'pointer'}}>
+            <MiniQR size={86}/>
+            <div style={{textAlign:'center',maxWidth:'106px'}}>
+              <div style={{fontSize:'9px',color:W7,fontWeight:600,lineHeight:1.4}}>Scan to book</div>
+              <div style={{fontSize:'8px',color:W3,marginTop:'1px'}}>or use NFC tag →</div>
+            </div>
+          </div>
+          {/* NFC badge */}
+          <div style={{position:'absolute',bottom:'10px',right:'10px',zIndex:25,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',padding:'4px 5px',background:'white',borderRadius:'8px'}}>
+            <NFCLogo size={29} fill="#002E5F"/>
+            <span style={{fontSize:'8px',color:'#002E5F',fontWeight:700,letterSpacing:'0.1em',lineHeight:1}}>NFC</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Overlays — unchanged ──────────────────────────────────────────────────────
+    function NewMtgOverlay({onClose,advancedOnly=false}){
+      const [showAdv,setShowAdv]=useState(advancedOnly);
+      const [title,setTitle]=useState('Walk Up Meeting');
+      const qb=[{t:'12:30 PM',dur:'23 min',ok:true},{t:'1:00 PM',dur:'53 min',ok:true},{t:'1:30 PM',dur:'83 min',ok:false},{t:'2:00 PM',dur:'113 min',ok:false}];
+      return(
+        <OWrap title={advancedOnly?'Book This Room Later':'Reserve Room'} onClose={onClose}>
+          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
+            <div style={{fontSize:'12.5px',color:W5}}>{ROOM}</div>
+            <div>
+              <div style={{fontSize:'9px',color:W5,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'5px'}}>Meeting Title <span style={{color:G,fontWeight:400,textTransform:'none',letterSpacing:0}}>· editable</span></div>
+              <input value={title} onChange={e=>setTitle(e.target.value)} style={{width:'100%',boxSizing:'border-box',background:W05,border:`1px solid ${W15}`,borderRadius:'8px',padding:'9px 11px',color:W1,fontSize:'13.5px',fontWeight:600,outline:'none'}}/>
+            </div>
+            {!advancedOnly&&(<div>
+              <div style={{fontSize:'10px',fontWeight:700,color:W5,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'9px'}}>QUICK BOOK</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px'}}>
+                {qb.map(({t,dur,ok})=>(<button key={t} onClick={ok?onClose:undefined} disabled={!ok} style={{padding:'13px 10px',background:ok?GB:'rgba(255,255,255,0.03)',border:`1.5px solid ${ok?GBD:W08}`,borderRadius:'10px',cursor:ok?'pointer':'not-allowed',display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',opacity:ok?1:0.38,minHeight:'64px'}}><div style={{fontSize:'16px',fontWeight:700,color:ok?W1:W5}}>Until {t}</div><div style={{fontSize:'11.5px',color:ok?W5:W3}}>{dur}</div></button>))}
+              </div>
+              <div style={{fontSize:'10.5px',color:W3,marginTop:'8px',textAlign:'center'}}>Next meeting 1:00 PM · later slots unavailable</div>
+            </div>)}
+            <div style={{borderTop:advancedOnly?'none':`1px solid ${W08}`,paddingTop:advancedOnly?'0':'11px'}}>
+              {!advancedOnly&&(<button onClick={()=>setShowAdv(x=>!x)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',width:'100%',padding:'9px',background:'transparent',border:`1px solid ${W08}`,borderRadius:'8px',color:W5,fontSize:'12px',cursor:'pointer',fontWeight:600,marginBottom:showAdv?'12px':'0'}}>{showAdv?'▲ Hide':'▼ Choose a specific time'}</button>)}
+              {(showAdv||advancedOnly)&&(<div style={{display:'flex',flexDirection:'column',gap:'11px'}}>
+                {advancedOnly&&<div style={{fontSize:'10px',fontWeight:700,color:W5,letterSpacing:'0.08em',textTransform:'uppercase'}}>DATE &amp; TIME</div>}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'9px'}}>
+                  {[{l:'Date',opts:['Mon Jun 12 (Today)','Tue Jun 13','Wed Jun 14','Thu Jun 15']},{l:'Start',opts:['12:30 PM','1:00 PM','1:30 PM','2:00 PM']},{l:'End',opts:['1:00 PM','1:30 PM','2:00 PM','2:30 PM']}].map(({l,opts})=>(<div key={l}><div style={{fontSize:'9px',color:W5,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:'4px'}}>{l}</div><select style={{width:'100%',background:CB,border:`1px solid ${CBD}`,borderRadius:'7px',padding:'8px 6px',color:W7,fontSize:'11px',outline:'none',cursor:'pointer'}}>{opts.map(o=><option key={o}>{o}</option>)}</select></div>))}
+                </div>
+                <div style={{display:'flex',justifyContent:'flex-end',gap:'8px',paddingTop:'8px',borderTop:`1px solid ${W08}`}}>
+                  <button onClick={onClose} style={{padding:'9px 18px',background:'transparent',border:`1.5px solid ${W15}`,borderRadius:'999px',color:W5,fontSize:'12.5px',fontWeight:600,cursor:'pointer'}}>Cancel</button>
+                  <button onClick={onClose} style={{padding:'9px 20px',background:G,border:'none',borderRadius:'999px',color:'#000',fontSize:'12.5px',fontWeight:700,cursor:'pointer'}}>Reserve Now</button>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MtgDetailsOverlay({onClose}){
+      return(
+        <OWrap title="Meeting Details" onClose={onClose}>
+          <div>
+            <div style={{fontSize:'16px',fontWeight:700,color:W1,marginBottom:'3px'}}>Daily Status Meeting</div>
+            <div style={{fontSize:'12px',color:W5,marginBottom:'14px'}}>1:00 – 1:30 PM · {ROOM}</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px',marginBottom:'14px'}}>
+              {[['Organizer','R. Kumar'],['Attendees','4 people']].map(([l,v])=>(<SCard key={l}><div style={{fontSize:'9px',color:W3,textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:'3px'}}>{l}</div><div style={{fontSize:'13px',color:W7,fontWeight:600}}>{v}</div></SCard>))}
+            </div>
+            <div style={{display:'flex',gap:'8px',paddingTop:'10px',borderTop:`1px solid ${W08}`}}>
+              <Pill c={R} bg={RB} bdr={RBD} sm onClick={onClose}>End Early</Pill>
+              <Pill c={W5} bg={CB} bdr={CBD} sm onClick={onClose}>Extend</Pill>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function NearbyOverlay({onClose,view,setView}){
+      const Tog=()=>(<div style={{display:'flex',gap:'3px',background:W05,border:`1px solid ${W08}`,borderRadius:'999px',padding:'3px'}}>{['list','map'].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:'4px 12px',borderRadius:'999px',background:view===v?W15:'transparent',border:'none',color:view===v?W1:W5,fontSize:'11px',fontWeight:600,cursor:'pointer'}}>{v==='list'?'≡ List':'⊞ Map'}</button>))}</div>);
+      return(<OWrap title="Nearby Rooms" subtitle={<Tog/>} onClose={onClose}>{view==='list'?<NearbyList onClose={onClose}/>:<NearbyMap onClose={onClose}/>}</OWrap>);
+    }
+    function NearbyList({onClose}){
+      return(<div style={{display:'flex',flexDirection:'column',gap:'7px'}}>{NEARBY.map((r,i)=>(<div key={i} onClick={r.ok?onClose:undefined} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 13px',background:CB,border:`1px solid ${r.ok?CBD:W05}`,borderRadius:'9px',cursor:r.ok?'pointer':'default',opacity:r.ok?1:0.5}}><div><div style={{fontSize:'13px',fontWeight:700,color:r.ok?W1:W5,marginBottom:'2px'}}>{r.n}</div><div style={{fontSize:'10.5px',color:W3}}>{r.f} · {r.seats} seats{!r.ok?` · Free at ${r.free}`:''}</div></div><span style={{fontSize:'11.5px',color:r.ok?G:W3,fontWeight:600}}>{r.ok?`${r.dur} →`:'Reserved'}</span></div>))}</div>);
+    }
+    function NearbyMap({onClose}){
+      const rooms=[{id:'640',x:8,y:7,w:26,h:32,ok:true,cur:false},{id:'645',x:36,y:7,w:26,h:32,ok:false,cur:true},{id:'650',x:64,y:7,w:26,h:32,ok:true,cur:false},{id:'660',x:8,y:60,w:26,h:32,ok:false,cur:false},{id:'710',x:36,y:60,w:26,h:32,ok:true,cur:false},{id:'3A',x:64,y:60,w:26,h:32,ok:true,cur:false}];
+      return(<div><div style={{fontSize:'10px',color:W3,marginBottom:'8px'}}>3rd Floor, Plano · Tap an available room to book</div><svg viewBox="0 0 100 100" style={{width:'100%',maxHeight:'200px',background:'rgba(255,255,255,0.02)',borderRadius:'7px',border:`1px solid ${W08}`}}><rect x="0" y="41" width="100" height="17" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.4"/><text x="50" y="51" textAnchor="middle" fontSize="3.8" fill="rgba(255,255,255,0.15)" fontWeight="600">CORRIDOR</text>{rooms.map(r=>(<g key={r.id} onClick={r.ok&&!r.cur?onClose:undefined} style={{cursor:r.ok&&!r.cur?'pointer':'default'}}><rect x={r.x} y={r.y} width={r.w} height={r.h} fill={r.cur?AB:r.ok?GB:RB} stroke={r.cur?A:r.ok?G:R} strokeWidth={r.cur?1.2:0.7} rx="1.5"/><text x={r.x+r.w/2} y={r.y+r.h/2-2.5} textAnchor="middle" fontSize="4.5" fontWeight="700" fill={r.cur?A:r.ok?G:R}>{r.id}</text><text x={r.x+r.w/2} y={r.y+r.h/2+5} textAnchor="middle" fontSize="3" fill="rgba(255,255,255,0.35)">{r.cur?'(here)':r.ok?'Available':'Reserved'}</text></g>))}</svg><div style={{display:'flex',gap:'12px',marginTop:'9px',fontSize:'10px',color:W3}}>{[[A,'This Room'],[G,'Available'],[R,'Reserved']].map(([c,l])=><span key={l}><span style={{color:c}}>■</span> {l}</span>)}</div></div>);
+    }
+    function QROverlay({onClose}){
+      return(
+        <OWrap title="Book via Phone" onClose={onClose}>
+          <div style={{display:'flex',gap:'20px',alignItems:'flex-start'}}>
+            <div style={{flexShrink:0}}><div style={{background:W1,borderRadius:'9px',padding:'9px',display:'inline-block'}}><svg viewBox="0 0 21 21" width="130" height="130">{QR_BITS.map((row,r)=>row.map((b,c)=>b?<rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#000"/>:null))}</svg></div></div>
+            <div>
+              <div style={{fontSize:'14px',fontWeight:700,color:W1,marginBottom:'8px'}}>Scan to book on your phone</div>
+              <div style={{fontSize:'12px',color:W5,lineHeight:1.65,marginBottom:'13px'}}>Opens your calendar with this room pre-filled:<br/><br/><strong style={{color:W7}}>{ROOM}</strong><br/><span style={{fontSize:'10.5px'}}>pl-conf-645@company.com</span></div>
+              <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',background:TB,border:`1px solid ${TBD}`,borderRadius:'8px',marginBottom:'7px'}}><div style={{width:'7px',height:'7px',borderRadius:'50%',background:T,flexShrink:0}}/><span style={{fontSize:'11px',color:T,fontWeight:600}}>Or tap NFC tag — lower-right corner of panel</span></div>
+              <div style={{fontSize:'10px',color:W3}}>M365 + Google Calendar · extensible architecture</div>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MaintOverlay({onClose}){
+      const [sel,setSel]=useState(new Set());
+      const toggle=i=>setSel(prev=>{const n=new Set(prev);n.has(i)?n.delete(i):n.add(i);return n;});
+      const hasAny=sel.size>0;
+      return(
+        <OWrap title="Report Maintenance Issues" onClose={onClose}>
+          <div style={{fontSize:'11px',color:W3,marginBottom:'11px'}}>Select all that apply</div>
+          <div style={{display:'flex',flexDirection:'column',gap:'7px',marginBottom:'13px'}}>
+            {MAINT.map((item,i)=>(<button key={i} onClick={()=>toggle(i)} style={{display:'flex',alignItems:'center',gap:'11px',padding:'10px 12px',background:sel.has(i)?AB:CB,border:`1px solid ${sel.has(i)?ABD:CBD}`,borderRadius:'9px',cursor:'pointer',textAlign:'left',minHeight:'46px'}}><div style={{width:'17px',height:'17px',borderRadius:'4px',flexShrink:0,border:`2px solid ${sel.has(i)?A:W15}`,background:sel.has(i)?A:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>{sel.has(i)&&<svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}</div><span style={{fontSize:'12.5px',color:sel.has(i)?W1:W7,fontWeight:sel.has(i)?600:400}}>{item}</span></button>))}
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:'10px',borderTop:`1px solid ${W08}`}}>
+            <span style={{fontSize:'11px',color:W3}}>{sel.size>0?`${sel.size} item${sel.size>1?'s':''} selected`:''}</span>
+            <div style={{display:'flex',gap:'8px'}}>
+              <button onClick={onClose} style={{padding:'9px 18px',background:'transparent',border:`1.5px solid ${W15}`,borderRadius:'999px',color:W5,fontSize:'12.5px',fontWeight:600,cursor:'pointer'}}>Cancel</button>
+              <button onClick={onClose} style={{padding:'9px 18px',background:hasAny?A:'rgba(245,158,11,0.22)',border:'none',borderRadius:'999px',color:hasAny?'#000':W15,fontSize:'12.5px',fontWeight:700,cursor:'pointer'}}>Submit Report</button>
+            </div>
+          </div>
+        </OWrap>
+      );
+    }
+    function MaintModeOverlay(){
+      return(
+        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.92)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'13px',zIndex:200}}>
+          <div style={{fontSize:'36px'}}>🔧</div>
+          <div style={{fontSize:'20px',fontWeight:800,color:W1}}>Room Unavailable</div>
+          <div style={{fontSize:'14px',color:W5,textAlign:'center',maxWidth:'280px',lineHeight:1.65}}>This room is currently under maintenance and is not available for booking.</div>
+          <div style={{padding:'8px 18px',background:AB,border:`1px solid ${ABD}`,borderRadius:'8px',fontSize:'12.5px',color:A,fontWeight:600}}>Maintenance in progress</div>
+          <div style={{marginTop:'5px',fontSize:'10px',color:W15,textAlign:'center',maxWidth:'270px',lineHeight:1.6}}>[FIRMWARE-OWNED] This screen cannot be dismissed by the user.<br/>Contact your administrator or facility manager.</div>
+        </div>
+      );
+    }
+
+    function App(){
+      const [sc,setSc]=useState('idle-available');
+      const [ov,setOv]=useState(null);
+      const [nv,setNv]=useState('list');
+      const setO=key=>{setOv(null);setTimeout(()=>setOv(key),0);};
+      const isIdle=sc.startsWith('idle');
+      const handleWake=()=>{setSc(sc.slice(5));setOv(null);};
+      const BASE=[
+        {k:'idle-available',l:'Idle · Available'},{k:'idle-reserved',l:'Idle · Reserved'},
+        {k:'idle-starts-soon',l:'Idle · Starts Soon ✦'},{k:'idle-occupied',l:'Idle · Occupied ✦'},
+        {k:'available',l:'Active · Available'},{k:'reserved',l:'Active · Reserved'},
+        {k:'starts-soon',l:'Active · Starts Soon ✦'},{k:'occupied',l:'Active · Occupied ✦'},
+      ];
+      const OVS=[
+        {k:'new-meeting',l:'New Meeting ✦'},{k:'book-later',l:'Book Later ✦'},
+        {k:'meeting-details',l:'Meeting Details'},{k:'nearby-rooms',l:'Nearby Rooms'},
+        {k:'qr-code',l:'QR / NFC'},{k:'maintenance',l:'Maintenance Req.'},
+        {k:'maintenance-mode',l:'⚠ Maint. Mode'},
+      ];
+      const bs=(active,amber=false)=>({padding:'4px 10px',background:active?(amber?'rgba(245,158,11,0.18)':W15):W05,border:`1px solid ${active?(amber?ABD:W3):W08}`,borderRadius:'5px',color:active?(amber?A:W1):W5,fontSize:'9.5px',fontWeight:600,cursor:'pointer'});
+      return(
+        <div style={{fontFamily:"'Inter','SF Pro Display',system-ui,sans-serif",background:'#08080c',minHeight:'100vh',padding:'14px 10px',userSelect:'none'}}>
+          <div style={{textAlign:'center',marginBottom:'9px'}}>
+            <div style={{fontSize:'11px',fontWeight:800,color:W7,letterSpacing:'0.06em'}}>CRESTRON SCHEDULING APP v2 — ITERATION 2C: IDLE SPACING</div>
+            <div style={{fontSize:'9px',color:W15,marginTop:'2px'}}>Fixed 16:10 · TSW-1080 10.1" · 1280×800 / 149 PPI &nbsp;·&nbsp; ✦ = new in v2 &nbsp;·&nbsp; Click idle screens to wake</div>
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'5px',marginBottom:'8px',justifyContent:'center'}}>
+            {BASE.map(({k,l})=>(<button key={k} onClick={()=>{setSc(k);setOv(null);}} style={bs(sc===k&&!ov)}>{l}</button>))}
+            <div style={{width:'1px',background:W08,margin:'0 2px'}}/>
+            {OVS.map(({k,l})=>(<button key={k} onClick={()=>{setSc('available');setO(k);}} style={bs(ov===k,true)}>{l}</button>))}
+          </div>
+          <div style={{position:'relative',width:'1280px',height:'800px',margin:'0 auto',overflow:'hidden',borderRadius:'10px',border:'2px solid rgba(255,255,255,0.28)',boxShadow:'0 0 0 1px rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.75)'}}>
+            {isIdle&&!ov&&<IdleScreen sk={sc.slice(5)} onWake={handleWake}/>}
+            {!isIdle&&!ov&&<ActiveScreen sk={sc} setO={setOv}/>}
+            {ov&&<ActiveScreen sk="available" setO={()=>{}}/>}
+            {ov==='new-meeting'&&<NewMtgOverlay onClose={()=>setOv(null)}/>}
+            {ov==='book-later'&&<NewMtgOverlay advancedOnly={true} onClose={()=>setOv(null)}/>}
+            {ov==='meeting-details'&&<MtgDetailsOverlay onClose={()=>setOv(null)}/>}
+            {ov==='nearby-rooms'&&<NearbyOverlay onClose={()=>setOv(null)} view={nv} setView={setNv}/>}
+            {ov==='qr-code'&&<QROverlay onClose={()=>setOv(null)}/>}
+            {ov==='maintenance'&&<MaintOverlay onClose={()=>setOv(null)}/>}
+            {ov==='maintenance-mode'&&<MaintModeOverlay/>}
+          </div>
+          <div style={{display:'flex',gap:'12px',justifyContent:'center',marginTop:'9px',flexWrap:'wrap'}}>
+            {[[G,'Available'],[R,'Reserved'],[A,'Starts Soon / Maint.'],[T,'Occupied · no meeting']].map(([c,l])=>(<div key={l} style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'9px',color:W3}}><div style={{width:'7px',height:'7px',borderRadius:'50%',background:c}}/>{l}</div>))}
+          </div>
+        </div>
+      );
+    }
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
