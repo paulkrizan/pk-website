@@ -125,11 +125,11 @@
     function StatusOrb({sk,size='active'}){
       const st=SC[sk]||SC.available;
       const g=OG[sk]||OG.available;
-      const D=size==='idle'?390:268;
-      const midD=size==='idle'?324:220;
-      const ctrD=size==='idle'?282:188;
-      const tSize=size==='idle'?38:26;
-      const sSize=size==='idle'?16:12;
+      const D=size==='idle'?420:268;
+      const midD=size==='idle'?350:220;
+      const ctrD=size==='idle'?304:188;
+      const tSize=size==='idle'?42:26;
+      const sSize=size==='idle'?17:12;
       const labelMap={available:'Available',reserved:'Reserved','starts-soon':'Starts Soon',occupied:'Occupied'};
       const subMap={available:'for 53 min',reserved:'until 12:30 PM','starts-soon':'in 6 min',occupied:'no booking'};
       return(
@@ -147,9 +147,9 @@
     function IdleScreen({sk,onWake}){
       const st=SC[sk]||SC.available;
       const g=OG[sk]||OG.available;
-      // Orb geometry: top:108, D=390 → bottom at 498. Meeting section at 516.
+      // Orb geometry: top:108, D=420 → bottom at 528. Meeting section at 546.
       return(
-        <div onClick={onWake} style={{position:'absolute',inset:0,cursor:'pointer',userSelect:'none',background:`radial-gradient(ellipse 560px 560px at 50% 42%, ${g.bg} 0%, transparent 68%), #090b10`}}>
+        <div onClick={onWake} style={{position:'absolute',inset:0,cursor:'pointer',userSelect:'none',background:`radial-gradient(ellipse 620px 620px at 50% 42%, ${g.bg} 0%, transparent 68%), #090b10`}}>
           {/* Side bar indicators */}
           {['left','right'].map(s=><div key={s} style={{position:'absolute',[s]:0,top:0,bottom:0,width:'12px',background:st.c,opacity:0.75}}/>)}
 
@@ -158,51 +158,51 @@
             <div style={{fontSize:'36px',fontWeight:800,color:W1,letterSpacing:'-0.01em',lineHeight:1.15}}>{ROOM}</div>
           </div>
 
-          {/* ── Orb: pinned at top:108 (room name ~42px + 44px gap) ── */}
+          {/* ── Orb: pinned at top:108 ── */}
           <div style={{position:'absolute',top:108,left:'50%',transform:'translateX(-50%)'}}>
             <StatusOrb sk={sk} size='idle'/>
           </div>
 
-          {/* ── Meeting info: anchored below orb (108+390+18=516) ── */}
-          <div style={{position:'absolute',top:516,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
-            <div style={{width:'280px',height:'1px',background:W15,marginBottom:'16px'}}/>
+          {/* ── Meeting info: anchored below orb (108+420+18=546) ── */}
+          <div style={{position:'absolute',top:546,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <div style={{width:'350px',height:'1px',background:W15,marginBottom:'20px'}}/>
             {sk==='available'&&(
-              <div style={{textAlign:'center',maxWidth:'420px'}}>
-                <div style={{fontSize:'13px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'9px'}}>NEXT MEETING</div>
-                <div style={{fontSize:'20px',fontWeight:700,color:W1,marginBottom:'4px'}}>Daily Status Meeting</div>
-                <div style={{fontSize:'16px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
+              <div style={{textAlign:'center',maxWidth:'560px'}}>
+                <div style={{fontSize:'20px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'12px'}}>NEXT MEETING</div>
+                <div style={{fontSize:'30px',fontWeight:700,color:W1,marginBottom:'6px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'24px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
               </div>
             )}
             {sk==='reserved'&&(
-              <div style={{textAlign:'center',maxWidth:'420px'}}>
-                <div style={{fontSize:'13px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'9px'}}>CURRENT MEETING</div>
-                <div style={{fontSize:'20px',fontWeight:700,color:W1,marginBottom:'4px'}}>Product Demo</div>
-                <div style={{fontSize:'16px',color:W5,marginBottom:'6px'}}>until 12:30 PM &nbsp;·&nbsp; J. Williams</div>
-                <div style={{fontSize:'15px',color:W3}}>Room free at 12:30 PM</div>
+              <div style={{textAlign:'center',maxWidth:'560px'}}>
+                <div style={{fontSize:'20px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'12px'}}>CURRENT MEETING</div>
+                <div style={{fontSize:'30px',fontWeight:700,color:W1,marginBottom:'6px'}}>Product Demo</div>
+                <div style={{fontSize:'24px',color:W5,marginBottom:'8px'}}>until 12:30 PM &nbsp;·&nbsp; J. Williams</div>
+                <div style={{fontSize:'22px',color:W3}}>Room free at 12:30 PM</div>
               </div>
             )}
             {sk==='starts-soon'&&(
-              <div style={{textAlign:'center',maxWidth:'420px'}}>
-                <div style={{fontSize:'13px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'9px'}}>STARTING SOON</div>
-                <div style={{fontSize:'20px',fontWeight:700,color:W1,marginBottom:'4px'}}>Daily Status Meeting</div>
-                <div style={{fontSize:'16px',color:W5}}>12:13 – 1:00 PM &nbsp;·&nbsp; R. Kumar</div>
+              <div style={{textAlign:'center',maxWidth:'560px'}}>
+                <div style={{fontSize:'20px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'12px'}}>STARTING SOON</div>
+                <div style={{fontSize:'30px',fontWeight:700,color:W1,marginBottom:'6px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'24px',color:W5}}>12:13 – 1:00 PM &nbsp;·&nbsp; R. Kumar</div>
               </div>
             )}
             {sk==='occupied'&&(
-              <div style={{textAlign:'center',maxWidth:'420px'}}>
-                <div style={{fontSize:'13px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'9px'}}>NEXT MEETING</div>
-                <div style={{fontSize:'20px',fontWeight:700,color:W1,marginBottom:'4px'}}>Daily Status Meeting</div>
-                <div style={{fontSize:'16px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
+              <div style={{textAlign:'center',maxWidth:'560px'}}>
+                <div style={{fontSize:'20px',fontWeight:700,color:W3,letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:'12px'}}>NEXT MEETING</div>
+                <div style={{fontSize:'30px',fontWeight:700,color:W1,marginBottom:'6px'}}>Daily Status Meeting</div>
+                <div style={{fontSize:'24px',color:W5}}>1:00 – 1:30 PM &nbsp;·&nbsp; R. Kumar</div>
               </div>
             )}
           </div>
 
           {/* ── Clock + date — large, bottom-left ── */}
           <div style={{position:'absolute',bottom:22,left:26}}>
-            <div style={{fontSize:'52px',fontWeight:700,color:W7,lineHeight:1,letterSpacing:'-0.02em'}}>
-              12:07 <span style={{fontSize:'24px',fontWeight:500,color:W3}}>PM</span>
+            <div style={{fontSize:'64px',fontWeight:700,color:W7,lineHeight:1,letterSpacing:'-0.02em'}}>
+              12:07 <span style={{fontSize:'30px',fontWeight:500,color:W3}}>PM</span>
             </div>
-            <div style={{fontSize:'16px',color:W3,marginTop:'6px',letterSpacing:'0.01em'}}>Monday, June 12, 2026</div>
+            <div style={{fontSize:'20px',color:W3,marginTop:'8px',letterSpacing:'0.01em'}}>Monday, June 12, 2026</div>
           </div>
 
           {/* ── Touch prompt — subtle, bottom-right ── */}
